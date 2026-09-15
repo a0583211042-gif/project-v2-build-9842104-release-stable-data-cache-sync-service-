@@ -5,44 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>סינכרון שבועות — ערך מוסף, סח"י והסב"ש</title>
 
-<!-- ספריות ענן ברקע לסנכרון בלבד -->
+<!-- ספריות ענן -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyB_AerhoBm-VJPqf25kOH1S4xGdauV2EDI",
-    authDomain: "group-hub-2026.firebaseapp.com",
-    projectId: "group-hub-2026",
-    storageBucket: "group-hub-2026.firebasestorage.app",
-    messagingSenderId: "816870308307",
-    appId: "1:816870308307:web:c3252cbb51f4f075d49726",
-    measurementId: "G-KMJ1H172PN"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  // סנכרון שקוף של LocalStorage מול הענן
-  let isCloudSyncing = false;
-  db.collection("groupData").doc("customTopics").onSnapshot((doc) => {
-    if (doc.exists) {
-      isCloudSyncing = true;
-      localStorage.setItem('customTopics.v2', JSON.stringify(doc.data() || {}));
-      isCloudSyncing = false;
-      if (typeof window.renderViews === 'function') window.renderViews();
-    }
-  });
-
-  const originalSetItem = localStorage.setItem;
-  localStorage.setItem = function(key, value) {
-    originalSetItem.apply(this, arguments);
-    if (key === 'customTopics.v2' && !isCloudSyncing) {
-      try {
-        const data = JSON.parse(value);
-        db.collection("groupData").doc("customTopics").set(data).catch(() => {});
-      } catch(e) {}
-    }
-  };
-</script>
 
 <style>
   :root {
@@ -83,6 +48,128 @@
   header h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin-bottom: 6px; }
   header p  { font-size: clamp(0.95rem, 2vw, 1.05rem); opacity: 0.92; }
 
+  .personal-dashboard, .chat-section {
+    background: var(--card);
+    border: 2px solid var(--primary);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 14px rgba(42,82,152,0.1);
+  }
+  .personal-dashboard h3, .chat-section h3 {
+    font-size: 1.15rem;
+    color: var(--primary-dark);
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #eaeaea;
+    padding-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .personal-upcoming-item {
+    background: var(--primary-light);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .personal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .action-btn, select.action-select {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--primary-dark);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .action-btn:hover, select.action-select:hover { background: var(--primary-light); border-color: var(--primary); }
+
+  /* תפריט מורחב לחניך תורן */
+  .duty-extended-menu {
+    margin-top: 12px;
+    padding: 14px;
+    background: var(--current-light);
+    border: 1px dashed var(--current);
+    border-radius: 8px;
+  }
+  .duty-extended-menu h4 {
+    font-size: 0.95rem;
+    color: #78350f;
+    margin-bottom: 8px;
+  }
+  .status-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 0.88rem;
+    background: #fff;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .status-report-table th, .status-report-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #eaeaea;
+    text-align: right;
+  }
+  .status-report-table th { background: #fef08a; color: #78350f; }
+
+  /* עיצוב צ'אט קבוצתי */
+  .chat-messages {
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding: 6px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .chat-msg {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .chat-msg .author { font-weight: 700; color: var(--primary-dark); margin-inline-end: 6px; }
+  .chat-msg .time { font-size: 0.75rem; color: var(--muted); float: left; }
+  .chat-input-row { display: flex; gap: 8px; }
+  .chat-input-row input {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .chat-input-row button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
   .help-btn {
     position: absolute;
     top: 14px;
@@ -95,30 +182,17 @@
     color: #fff;
     font-size: 1rem;
     font-weight: 700;
-    font-family: inherit;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background .15s, transform .15s;
-    line-height: 1;
-    padding: 0;
   }
-  .help-btn:hover {
-    background: rgba(255,255,255,0.35);
-    transform: scale(1.08);
-  }
-  .help-btn:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-  }
+  .help-btn:hover { background: rgba(255,255,255,0.35); }
 
   .current-week-badge {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
     background: rgba(255,255,255,0.2);
     border: 1px solid rgba(255,255,255,0.4);
     padding: 6px 16px;
@@ -126,7 +200,6 @@
     font-size: .95rem;
     margin-top: 12px;
   }
-  .current-week-badge strong { font-weight: 700; }
 
   .view-tabs {
     display: flex;
@@ -142,23 +215,10 @@
     background: #fff;
     color: var(--primary-dark);
     font-weight: 600;
-    font-size: .95rem;
-    font-family: inherit;
     cursor: pointer;
-    transition: all .2s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.04);
   }
-  .view-tab:hover {
-    border-color: var(--primary);
-    background: var(--primary-light);
-    transform: translateY(-1px);
-  }
-  .view-tab.active {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary-dark);
-    box-shadow: 0 4px 12px rgba(42,82,152,0.3);
-  }
+  .view-tab.active { background: var(--primary); color: #fff; border-color: var(--primary-dark); }
 
   .toolbar {
     display: flex;
@@ -176,13 +236,6 @@
     border-radius: 10px;
     border: 2px solid var(--border);
     font-size: 1rem;
-    font-family: inherit;
-    transition: border-color .2s, box-shadow .2s;
-  }
-  .toolbar input[type="search"]:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(42,82,152,0.15);
   }
   .toolbar button {
     padding: 10px 16px;
@@ -191,14 +244,7 @@
     background: #fff;
     color: var(--primary-dark);
     font-weight: 600;
-    font-size: .95rem;
-    font-family: inherit;
     cursor: pointer;
-    transition: all .2s;
-  }
-  .toolbar button:hover {
-    border-color: var(--primary);
-    background: var(--primary-light);
   }
 
   .weeks-grid {
@@ -219,51 +265,11 @@
     font-weight: 700;
     color: var(--primary);
     cursor: pointer;
-    transition: transform .15s, border-color .15s, background .15s, box-shadow .15s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.04);
-    font-family: inherit;
   }
-  .week-btn:hover {
-    border-color: var(--primary);
-    background: var(--primary-light);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(42,82,152,0.12);
-  }
-  .week-btn:focus-visible {
-    outline: 3px solid var(--primary);
-    outline-offset: 2px;
-  }
-  .week-btn.active {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary-dark);
-    box-shadow: 0 6px 14px rgba(42,82,152,0.35);
-  }
-  .week-btn.current {
-    border-color: var(--current);
-    background: var(--current-light);
-    color: #78350f;
-  }
-  .week-btn.current:hover {
-    background: #fde68a;
-    border-color: var(--current);
-  }
-  .week-btn.current::before {
-    content: "השבוע";
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--current);
-    color: #fff;
-    font-size: .65rem;
-    font-weight: 700;
-    padding: 1px 7px;
-    border-radius: 999px;
-    white-space: nowrap;
-    line-height: 1.4;
-    letter-spacing: .3px;
-  }
+  .week-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+  .week-btn.active { background: var(--primary); color: #fff; border-color: var(--primary-dark); }
+  .week-btn.current { border-color: var(--current); background: var(--current-light); color: #78350f; }
 
   .instructions {
     text-align: center;
@@ -272,7 +278,6 @@
     padding: 40px 20px;
     background: var(--card);
     border-radius: 14px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   }
 
   .modal-overlay {
@@ -284,7 +289,6 @@
     justify-content: center;
     padding: 20px;
     z-index: 100;
-    animation: fadeIn .2s ease;
   }
   .modal-overlay[hidden] { display: none; }
   .modal-content {
@@ -296,14 +300,7 @@
     overflow-y: auto;
     padding: 26px;
     position: relative;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    animation: slideUp .25s ease;
   }
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px) scale(.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   .modal-close {
     position: absolute;
     top: 12px;
@@ -317,39 +314,7 @@
     font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background .15s;
-    font-family: inherit;
-    line-height: 1;
   }
-  .modal-close:hover { background: #e0e0e0; }
-  .modal-close:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
-
-  .modal-content h2 {
-    font-size: 1.35rem;
-    color: var(--primary-dark);
-    margin-bottom: 18px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #eaeaea;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    padding-inline-start: 40px;
-  }
-  .modal-content h2 .current-tag {
-    display: inline-block;
-    background: var(--current);
-    color: #fff;
-    font-size: .75rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 999px;
-    letter-spacing: .3px;
-  }
-
   .category-row {
     display: flex;
     align-items: flex-start;
@@ -361,21 +326,8 @@
     border-inline-start: 4px solid var(--primary);
   }
   .category-row.hasb { border-inline-start-color: var(--green); }
-  .category-name {
-    font-weight: 700;
-    min-width: 96px;
-    color: #444;
-    flex-shrink: 0;
-  }
-  .category-content {
-    flex: 1;
-    color: #555;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .category-content .person-name { font-size: 1rem; }
-  .category-content strong { color: #333; }
+  .category-name { font-weight: 700; min-width: 96px; color: #444; }
+  .category-content { flex: 1; display: flex; flex-direction: column; gap: 6px; }
   .empty-slot { color: var(--muted); font-style: italic; }
 
   .person-card, .category-section {
@@ -391,17 +343,6 @@
     margin-bottom: 12px;
     padding-bottom: 8px;
     border-bottom: 2px solid #eaeaea;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .person-card h3 .count,
-  .category-section h3 .count {
-    font-size: .85rem;
-    color: var(--muted);
-    font-weight: 500;
-    margin-inline-start: auto;
   }
   .person-card ul, .category-section ul { list-style: none; }
   .person-card li, .category-section li {
@@ -414,311 +355,74 @@
     flex-direction: column;
     gap: 6px;
   }
-
-  .person-card li.has-topic,
-  .category-section li.has-topic {
-    border-inline-start-color: var(--green);
-  }
-  .person-card li.has-topic .week-badge,
-  .category-section li.has-topic .week-badge {
-    background: var(--green);
-  }
-
-  .person-card li.is-current,
-  .category-section li.is-current {
-    background: var(--current-light);
-    border-inline-start-color: var(--current);
-  }
-  .person-card li.is-current .week-badge,
-  .category-section li.is-current .week-badge {
-    background: var(--current);
-  }
-
-  .row-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .week-badge {
-    display: inline-block;
-    background: var(--primary);
-    color: #fff;
-    padding: 2px 10px;
-    border-radius: 999px;
-    font-size: .82rem;
-    font-weight: 700;
-    flex-shrink: 0;
-    min-width: 62px;
-    text-align: center;
-  }
-
-  .cat-label {
-    font-weight: 600;
-    color: var(--primary-dark);
-    font-size: .95rem;
-  }
-  .person-name {
-    font-weight: 600;
-    color: #333;
-    font-size: .95rem;
-  }
-
-  .topic-line {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    font-size: .9rem;
-    color: #555;
-    padding: 4px 10px;
-    border-inline-start: 2px solid #d0d0d0;
-    margin-inline-start: 4px;
-  }
-  .topic-line .topic-label {
-    font-size: .8rem;
-    color: #999;
-    font-weight: 500;
-  }
-  .topic-text { font-style: italic; }
-
-  .add-topic-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 12px;
-    border-radius: 6px;
-    border: 1.5px dashed var(--primary);
-    background: #fff;
-    color: var(--primary);
-    font-size: .82rem;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all .15s;
-  }
-  .add-topic-btn:hover {
-    background: var(--primary-light);
-    border-style: solid;
-  }
-  .edit-topic-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: 1px solid #ccc;
-    background: #fff;
-    color: #777;
-    font-size: .75rem;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all .15s;
-    padding: 0;
-    line-height: 1;
-  }
-  .edit-topic-btn:hover {
-    background: #f0f0f0;
-    border-color: #999;
-    color: #333;
-  }
-
-  .modal-footer {
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid #eaeaea;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
-  }
-  .set-current-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 20px;
-    border-radius: 10px;
-    border: 2px solid var(--current);
-    background: #fff;
-    color: var(--current);
-    font-weight: 700;
-    font-size: .95rem;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all .15s;
-  }
-  .set-current-btn:hover {
-    background: var(--current);
-    color: #fff;
-  }
-  .anchor-hint {
-    font-size: .82rem;
-    color: #666;
-    text-align: center;
-    line-height: 1.5;
-  }
-  .anchor-hint strong { color: var(--primary-dark); }
-  .current-note {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 20px;
-    border-radius: 10px;
-    background: var(--current-light);
-    color: #78350f;
-    font-weight: 600;
-    font-size: .95rem;
-  }
-  .current-note .anchor-info {
-    display: block;
-    font-weight: 400;
-    font-size: .78rem;
-    color: #92400e;
-    margin-top: 3px;
-  }
-
-  .help-content h2 { padding-inline-start: 40px; }
-  .help-content h3 {
-    font-size: 1rem;
-    color: var(--primary-dark);
-    margin: 18px 0 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid #eaeaea;
-  }
-  .help-content h3:first-of-type { margin-top: 8px; }
-  .help-content p { margin-bottom: 8px; color: #555; font-size: .95rem; }
-  .help-content ol, .help-content ul {
-    margin: 8px 0 12px;
-    padding-inline-start: 22px;
-    color: #555;
-    font-size: .95rem;
-  }
-  .help-content li { margin-bottom: 5px; }
-  .help-content code {
-    background: #f0f4ff;
-    color: var(--primary-dark);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: .88em;
-    font-family: 'Consolas', monospace;
-    direction: ltr;
-    unicode-bidi: embed;
-  }
-  .help-content .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 8px 0 14px;
-  }
-  .help-content .legend span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: .85rem;
-    background: #f8fafc;
-  }
-  .help-content .legend i {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .help-content .legend .dot-blue { background: var(--primary); }
-  .help-content .legend .dot-green { background: var(--green); }
-  .help-content .legend .dot-orange { background: var(--current); }
-  .help-content kbd {
-    background: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 1px 6px;
-    font-size: .82em;
-    font-family: inherit;
-  }
-  /* ===== טבלת זמנים ===== */
-  .help-content .times-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 8px 0 16px;
-    font-size: .93rem;
-  }
-  .help-content .times-table td {
-    padding: 8px 12px;
-    border-bottom: 1px solid #eaeaea;
-    color: #444;
-  }
-  .help-content .times-table td:first-child {
-    font-weight: 600;
-    color: var(--primary-dark);
-  }
-  .help-content .times-table td:last-child {
-    text-align: left;
-    font-weight: 700;
-    color: var(--current);
-    white-space: nowrap;
-    direction: ltr;
-  }
-  .help-content .times-table tr:last-child td { border-bottom: none; }
-
-  .no-results {
-    text-align: center;
-    color: var(--muted);
-    padding: 24px;
-    font-style: italic;
-    display: none;
-  }
+  .row-head { display: flex; align-items: center; gap: 10px; }
+  .week-badge { background: var(--primary); color: #fff; padding: 2px 10px; border-radius: 999px; font-size: .82rem; font-weight: 700; }
+  .topic-line { display: flex; align-items: center; gap: 6px; font-size: .9rem; color: #555; padding: 4px 10px; border-inline-start: 2px solid #d0d0d0; }
+  .add-topic-btn { padding: 4px 12px; border-radius: 6px; border: 1.5px dashed var(--primary); background: #fff; color: var(--primary); cursor: pointer; }
+  .edit-topic-btn { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+  .modal-footer { margin-top: 20px; padding-top: 16px; border-top: 1px solid #eaeaea; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  .set-current-btn { padding: 10px 20px; border-radius: 10px; border: 2px solid var(--current); background: #fff; color: var(--current); font-weight: 700; cursor: pointer; }
+  .current-note { padding: 10px 20px; border-radius: 10px; background: var(--current-light); color: #78350f; font-weight: 600; }
+  .no-results { text-align: center; color: var(--muted); padding: 24px; font-style: italic; display: none; }
   .no-results.show { display: block; }
-
-  @media (max-width: 480px) {
-    body { padding: 12px; }
-    header { padding: 20px 16px; }
-    .modal-content { padding: 20px 18px; }
-    .category-row { flex-direction: column; gap: 4px; }
-    .category-name { min-width: 0; }
-    .person-card, .category-section { padding: 14px 16px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: .001ms !important;
-      transition-duration: .001ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
 </style>
 </head>
 <body>
 <div class="container">
   <header>
-    <button type="button" class="help-btn" id="helpBtn" aria-label="הוראות שימוש" title="הוראות שימוש">?</button>
+    <button type="button" class="help-btn" id="helpBtn">?</button>
     <h1>לוח שבועות מרוכז</h1>
     <p>עיון לפי שבוע, לפי שם או לפי קטגוריה</p>
     <div class="current-week-badge" id="currentBadge"></div>
   </header>
 
-  <div class="view-tabs" role="tablist" aria-label="מצבי תצוגה">
-    <button type="button" class="view-tab active" data-view="week" role="tab" aria-selected="true">📅 לפי שבוע</button>
-    <button type="button" class="view-tab" data-view="person" role="tab" aria-selected="false">👤 לפי שם</button>
-    <button type="button" class="view-tab" data-view="category" role="tab" aria-selected="false">🏷️ לפי קטגוריה</button>
+  <!-- אזור אישי ותורנות -->
+  <div class="personal-dashboard" id="personalDashboard">
+    <h3 id="personalGreeting">
+      <span>👤 אזור אישי</span>
+      <button type="button" class="action-btn" id="logoutBtn" style="font-size: 0.75rem; padding: 3px 8px;">התנתק</button>
+    </h3>
+    <div id="personalContent">מאמת נתונים מול הענן...</div>
+    <div class="personal-actions">
+      <button type="button" class="action-btn" id="changeCodeBtn">🔐 שינוי קוד</button>
+      <select id="dutySelector" class="action-select" aria-label="בחר חניך תורן">
+        <option value="">⭐ בחר חניך תורן...</option>
+      </select>
+      <button type="button" class="action-btn" id="notifBtn" style="background:#f0fdf4; color:#166534; border-color:#bbf7d0;">🔔 הפעל התראות</button>
+    </div>
+    <!-- תפריט מורחב לחניך תורן בלבד -->
+    <div id="dutyMenuContainer"></div>
   </div>
 
-  <div class="toolbar hidden" id="toolbar" role="search">
-    <input type="search" id="search" placeholder="חיפוש..." aria-label="חיפוש">
+  <!-- צ'אט קבוצתי חי -->
+  <div class="chat-section">
+    <h3>💬 צ'אט קבוצתי והודעות</h3>
+    <div class="chat-messages" id="chatMessagesBox">טוען הודעות...</div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="כתוב הודעה או עדכון לקבוצה...">
+      <button type="button" id="chatSendBtn">שלח</button>
+    </div>
+  </div>
+
+  <div class="view-tabs" role="tablist">
+    <button type="button" class="view-tab active" data-view="week">📅 לפי שבוע</button>
+    <button type="button" class="view-tab" data-view="person">👤 לפי שם</button>
+    <button type="button" class="view-tab" data-view="category">🏷️ לפי קטגוריה</button>
+  </div>
+
+  <div class="toolbar hidden" id="toolbar">
+    <input type="search" id="search" placeholder="חיפוש...">
     <button type="button" id="clearBtn">נקה</button>
   </div>
 
   <div id="view-week" class="view-panel">
-    <div class="weeks-grid" id="weeksGrid" role="tablist" aria-label="בחירת שבוע"></div>
-    <div id="instructions" class="instructions">
-      👆 בחר שבוע מהרשימה למעלה כדי להציג את הפעילויות והמשתתפים.
-    </div>
+    <div class="weeks-grid" id="weeksGrid"></div>
+    <div id="instructions" class="instructions">👆 בחר שבוע מהרשימה למעלה כדי להציג את הפעילויות.</div>
   </div>
 
   <div id="view-person" class="view-panel" hidden>
     <div id="personList"></div>
-    <p id="personNoResults" class="no-results">לא נמצאו שמות מתאימים לחיפוש.</p>
+    <p id="personNoResults" class="no-results">לא נמצאו שמות מתאימים.</p>
   </div>
 
   <div id="view-category" class="view-panel" hidden>
@@ -727,78 +431,17 @@
 </div>
 
 <div class="modal-overlay" id="weekModal" hidden>
-  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <button type="button" class="modal-close" id="modalClose" aria-label="סגור">✕</button>
+  <div class="modal-content">
+    <button type="button" class="modal-close" id="modalClose">✕</button>
     <div id="modalBody"></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="helpModal" hidden>
-  <div class="modal-content help-content" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-    <button type="button" class="modal-close" id="helpClose" aria-label="סגור">✕</button>
-    <h2 id="helpTitle">📖 הוראות שימוש</h2>
-
-    <h3>⏱️ זמני פעילויות</h3>
-    <table class="times-table">
-      <tr><td>הסב"ש</td><td>~30 דק'</td></tr>
-      <tr><td>הסב"ש חנת"ר</td><td>~30 דק'</td></tr>
-      <tr><td>סח"י</td><td>~30 דק'</td></tr>
-      <tr><td>ערך מוסף</td><td>~5 דק'</td></tr>
-    </table>
-
-    <h3>🗓️ השבוע הנוכחי</h3>
-    <p>המערכת מזהה אוטומטית את השבוע לפי התאריך ומתקדמת בכל יום ראשון.</p>
-    <ol>
-      <li>אם דילגתם על שבוע — לחץ על השבוע הרצוי</li>
-      <li>בחלון שנפתח לחץ <strong>📌 קבע כשבוע הנוכחי</strong></li>
-      <li>מכאן והלאה המערכת תמשיך לבד בכל יום ראשון</li>
-    </ol>
-
-    <h3>👀 3 דרכי צפייה</h3>
-    <ul>
-      <li><strong>📅 לפי שבוע</strong> — כל השבועות ברשת</li>
-      <li><strong>👤 לפי שם</strong> — כל אדם עם הפעילויות שלו</li>
-      <li><strong>🏷️ לפי קטגוריה</strong> — ערך מוסף / סח"י / הסב"ש</li>
-    </ul>
-    <p>בטאבים "לפי שם" ו"לפי קטגוריה" יש תיבת חיפוש.</p>
-
-    <h3>✏️ הוספת נושא</h3>
-    <ul>
-      <li><strong>סח"י וערך מוסף</strong> — כפתור <code>+ הוסף נושא</code> מתחת לשם</li>
-      <li><strong>הסב"ש</strong> — הנושא קבוע, אין עריכה</li>
-      <li>עריכה — כפתור <code>✎</code> ליד הנושא</li>
-      <li>מחיקה — מחק את הטקסט ולחץ אישור</li>
-    </ul>
-
-    <h3>🎨 משמעות הצבעים</h3>
-    <div class="legend">
-      <span><i class="dot-blue"></i> אין נושא</span>
-      <span><i class="dot-green"></i> יש נושא</span>
-      <span><i class="dot-orange"></i> השבוע הנוכחי</span>
-    </div>
-
-    <h3>🛠️ עריכת נתונים קבועים</h3>
-    <p>פתח את הקובץ ב‑<strong>Notepad</strong> או <strong>VS Code</strong> ומצא:</p>
-    <ul>
-      <li><strong>אדם חדש</strong> — הוסף שורה ב‑<code>PEOPLE</code></li>
-      <li><strong>שבוע חדש</strong> — הוסף שורה ב‑<code>WEEK_DATA</code></li>
-      <li><strong>תיקון שם</strong> — ערוך רק ב‑<code>PEOPLE</code>, כל השבועות מתעדכנים</li>
-    </ul>
-
-    <h3>⚠️ חשוב לדעת</h3>
-    <ul>
-      <li>הנתונים נשמרים <strong>מקומית</strong> לכל מחשב</li>
-      <li>ניקוי היסטוריית הדפדפן ימחק נושאים שהוספת ידנית</li>
-      <li>שמור גיבוי לקובץ (ענן / מייל)</li>
-    </ul>
-
-    <h3>🆘 תקלות נפוצות</h3>
-    <ul>
-      <li>השינויים לא נשמרים → לא במצב פרטי/Incognito</li>
-      <li>שם שגוי → ערוך ב‑<code>PEOPLE</code></li>
-      <li>שבוע לא מתקדם → קבע ידנית</li>
-      <li>לא רואה נושא שהוספתי → רענן עם <kbd>Ctrl</kbd>+<kbd>F5</kbd></li>
-    </ul>
+  <div class="modal-content">
+    <button type="button" class="modal-close" id="helpClose">✕</button>
+    <h2>📖 הוראות שימוש</h2>
+    <p>הנתונים, דיווחי הסטטוס והצ'אט מנוהלים בזמן אמת בענן עבור כל חברי הקבוצה.</p>
   </div>
 </div>
 
@@ -806,10 +449,18 @@
 (function () {
   'use strict';
 
-  const DEFAULT_ANCHOR = {
-    sundayISO: '2026-09-13',
-    week: 5
+  const firebaseConfig = {
+    apiKey: "AIzaSyB_AerhoBm-VJPqf25kOH1S4xGdauV2EDI",
+    authDomain: "group-hub-2026.firebaseapp.com",
+    projectId: "group-hub-2026",
+    storageBucket: "group-hub-2026.firebasestorage.app",
+    messagingSenderId: "816870308307",
+    appId: "1:816870308307:web:c3252cbb51f4f075d49726",
+    measurementId: "G-KMJ1H172PN"
   };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
   const PEOPLE = {
     aharonShemesh:    'אהרן שמש',
@@ -821,6 +472,14 @@
     avrahamGutstein:  'אברהם גוטשטיין',
     asherPisrbavsky:  'אשר פיסרבסקי'
   };
+
+  const RANDOM_MESSAGES = [
+    "\"החכמה היא לא לדעת מה להגיד, אלא מתי להגיד.\" 💡",
+    "\"עבודת צוות היא הכוח, כוחו של הכלל גדול מכוחו של הפרט.\" 🤝",
+    "\"כל התקדמות קטנה מקרבת אותך ליעד הגדול.\" 🚀",
+    "\"התמדה היא המפתח להצלחה בכל משימה.\" ⭐",
+    "\"שבוע מוצלח מתחיל בתיאום טוב ובראש צלול.\" 🎯"
+  ];
 
   const nameOf = (key) => (key == null || key === '') ? null : (PEOPLE[key] || key);
 
@@ -856,78 +515,226 @@
     30: { added: null,              sachi: null,                     hasb: { trainee: 'yehudaKaufman',  topic: 'מבצע קדש' } }
   };
 
-  const CAT_NAMES = {
-    added: 'ערך מוסף',
-    sachi: 'סח"י',
-    hasb: 'הסב"ש'
-  };
-
+  const CAT_NAMES = { added: 'ערך מוסף', sachi: 'סח"י', hasb: 'הסב"ש' };
   const ALL_WEEKS = Object.keys(WEEK_DATA).map(Number).sort((a, b) => a - b);
 
-  const TOPICS_KEY = 'customTopics.v2';
+  let cloudTopics = {};
+  let currentDuty = "";
+  let memberStatuses = {};
+  let currentUser = localStorage.getItem('loggedUser');
 
-  function loadTopics() {
-    try { return JSON.parse(localStorage.getItem(TOPICS_KEY) || '{}'); }
-    catch { return {}; }
+  async function checkAuthAndStart() {
+    try {
+      const docRef = db.collection("groupData").doc("configCodes");
+      let docSnap = await docRef.get();
+      let codesMap = {};
+
+      if (docSnap.exists) {
+        codesMap = docSnap.data();
+      } else {
+        codesMap = {
+          "1234": "אהרן שמש", "2345": "אהרן פוטש", "3456": "יעקב פוטש",
+          "4567": "אפרים גוטליב (ר)", "5678": "אפרים גוטליב (ב)",
+          "6789": "יהודה קויפמן", "7890": "אברהם גוטשטיין"
+        };
+        await docRef.set(codesMap);
+      }
+
+      if (!currentUser || !Object.values(codesMap).includes(currentUser)) {
+        let enteredCode = prompt("הכנס קוד אישי כניסה למערכת:");
+        if (!enteredCode) { location.reload(); return; }
+
+        if (codesMap[enteredCode]) {
+          currentUser = codesMap[enteredCode];
+          localStorage.setItem('loggedUser', currentUser);
+          alert("שלום " + currentUser + ", זיהינו אותך בהצלחה!");
+        } else {
+          alert("קוד שגוי!");
+          localStorage.removeItem('loggedUser');
+          location.reload();
+          return;
+        }
+      }
+    } catch (e) {
+      alert("שגיאת התחברות מול הענן.");
+    }
+    initApp();
   }
-  function saveTopic(week, cat, text) {
-    const all = loadTopics();
-    if (!all[week]) all[week] = {};
-    if (text && text.trim()) all[week][cat] = text.trim();
-    else delete all[week][cat];
-    if (Object.keys(all[week]).length === 0) delete all[week];
-    localStorage.setItem(TOPICS_KEY, JSON.stringify(all));
+
+  function initApp() {
+    const dutySelector = document.getElementById('dutySelector');
+    dutySelector.innerHTML = '<option value="">⭐ בחר חניך תורן...</option>';
+    Object.values(PEOPLE).forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      dutySelector.appendChild(opt);
+    });
+
+    dutySelector.addEventListener('change', async (e) => {
+      const selectedName = e.target.value;
+      if (!selectedName) return;
+      try {
+        await db.collection("groupData").doc("metaMeta").set({ currentDuty: selectedName }, { merge: true });
+        alert("החניך התורן עודכן בהצלחה ל-" + selectedName);
+      } catch (err) {
+        alert("שגיאה בעדכון החניך התורן.");
+      }
+    });
+
+    // סנכרון נושאים
+    db.collection("groupData").doc("customTopics").onSnapshot((doc) => {
+      cloudTopics = doc.data() || {};
+      refreshUI();
+    });
+
+    // סנכרון חניך תורן וסטטוסים
+    db.collection("groupData").doc("metaMeta").onSnapshot((doc) => {
+      if (doc.exists) {
+        const data = doc.data();
+        currentDuty = data.currentDuty || "";
+        memberStatuses = data.memberStatuses || {};
+        const selector = document.getElementById('dutySelector');
+        if (selector) selector.value = currentDuty;
+      }
+      refreshUI();
+    });
+
+    // סנכרון צ'אט והתראות
+    db.collection("groupData").doc("chatRoom").onSnapshot((doc) => {
+      const messages = (doc.exists && doc.data().messages) ? doc.data().messages : [];
+      renderChatMessages(messages);
+      
+      // אם התקבלה הודעה חדשה ויש הרשאת התראות
+      if (messages.length > 0) {
+        const lastMsg = messages[messages.length - 1];
+        if (lastMsg.author !== currentUser && Notification.permission === "granted") {
+          new Notification("הודעה חדשה בקבוצה (" + lastMsg.author + ")", {
+            body: lastMsg.text,
+            icon: "https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/anonymous.svg"
+          });
+        }
+      }
+    });
   }
+
+  // עדכון סטטוס הגעה אישי
+  window.updateMyStatus = async function(statusText) {
+    try {
+      memberStatuses[currentUser] = { text: statusText, time: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) };
+      await db.collection("groupData").doc("metaMeta").set({ memberStatuses: memberStatuses }, { merge: true });
+      alert("הסטטוס שלך עודכן בהצלחה!");
+    } catch (e) {
+      alert("שגיאה בעדכון הסטטוס.");
+    }
+  };
+
+  // הפעלת התראות בדפדפן
+  document.getElementById('notifBtn').addEventListener('click', () => {
+    if (!("Notification" in window)) {
+      alert("הדפדפן שלך אינו תומך בהתראות.");
+    } else {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          alert("התראות הופעלו בהצלחה! תקבל עדכונים למכשיר.");
+        } else {
+          alert("התראות נדחו על ידי הדפדפן.");
+        }
+      });
+    }
+  });
+
+  async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const chatRef = db.collection("groupData").doc("chatRoom");
+    try {
+      const doc = await chatRef.get();
+      let messages = (doc.exists && doc.data().messages) ? doc.data().messages : [];
+      
+      const timeStr = new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+      messages.push({ author: currentUser, text: text, time: timeStr });
+      
+      if (messages.length > 50) messages = messages.slice(messages.length - 50);
+
+      await chatRef.set({ messages: messages });
+      input.value = "";
+    } catch (e) {
+      alert("שגיאה בשליחת ההודעה.");
+    }
+  }
+
+  document.getElementById('chatSendBtn').addEventListener('click', sendChatMessage);
+  document.getElementById('chatInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendChatMessage();
+  });
+
+  function renderChatMessages(messages) {
+    const box = document.getElementById('chatMessagesBox');
+    if (!messages.length) {
+      box.innerHTML = '<div style="color:var(--muted); text-align:center; font-style:italic; padding:10px;">אין הודעות עדיין. היה הראשונים לכתוב!</div>';
+      return;
+    }
+    box.innerHTML = messages.map(m => 
+      '<div class="chat-msg"><span class="time">' + m.time + '</span><span class="author">' + m.author + ':</span> <span>' + m.text + '</span></div>'
+    ).join('');
+    box.scrollTop = box.scrollHeight;
+  }
+
+  async function changeUserCode() {
+    let newCode = prompt("הכנס קוד אישי חדש (לפחות 4 תווים):");
+    if (!newCode || newCode.trim().length < 2) return;
+
+    try {
+      const docRef = db.collection("groupData").doc("configCodes");
+      const docSnap = await docRef.get();
+      let codesMap = docSnap.exists ? docSnap.data() : {};
+
+      for (let code in codesMap) {
+        if (codesMap[code] === currentUser) delete codesMap[code];
+      }
+
+      codesMap[newCode.trim()] = currentUser;
+      await docRef.set(codesMap);
+      alert("הקוד האישי עודכן בהצלחה בענן!");
+    } catch (e) {
+      alert("שגיאה בעדכון הקוד בענן.");
+    }
+  }
+
+  document.getElementById('changeCodeBtn').addEventListener('click', changeUserCode);
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('loggedUser');
+    location.reload();
+  });
+
   function getTopicFor(week, cat) {
     if (cat === 'hasb') {
       const d = WEEK_DATA[week];
       return (d && d.hasb && d.hasb.topic) || null;
     }
-    const all = loadTopics();
-    return (all[week] && all[week][cat]) || null;
+    return (cloudTopics[week] && cloudTopics[week][cat]) || null;
   }
 
-  /* ============================================================
-     עוגן השבוע — כשקובעים ידנית, זה פשוט הופך לברירת המחדל החדשה.
-     אין תווית "מותאם" ואין אפשרות איפוס.
-     ============================================================ */
-  const ANCHOR_KEY = 'currentAnchor.v1';
-
-  function loadCustomAnchor() {
-    try {
-      const raw = localStorage.getItem(ANCHOR_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      if (parsed && Number.isFinite(parsed.week) && /^\d{4}-\d{2}-\d{2}$/.test(parsed.sundayISO)) {
-        return parsed;
-      }
-      return null;
-    } catch { return null; }
-  }
-  function getActiveAnchor() {
-    return loadCustomAnchor() || DEFAULT_ANCHOR;
-  }
-  function formatISO(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return y + '-' + m + '-' + d;
-  }
-  function currentSundayISO() {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const dayOfWeek = now.getDay();
-    const sunday = new Date(now);
-    sunday.setDate(now.getDate() - dayOfWeek);
-    return formatISO(sunday);
-  }
-  function setAnchorForWeek(week) {
-    const anchor = { week, sundayISO: currentSundayISO() };
-    localStorage.setItem(ANCHOR_KEY, JSON.stringify(anchor));
+  function saveTopicToCloud(week, cat, text) {
+    if (!cloudTopics[week]) cloudTopics[week] = {};
+    if (text && text.trim()) cloudTopics[week][cat] = text.trim();
+    else {
+      delete cloudTopics[week][cat];
+      if (Object.keys(cloudTopics[week]).length === 0) delete cloudTopics[week];
+    }
+    db.collection("groupData").doc("customTopics").set(cloudTopics).catch(() => {});
   }
 
   function calculateWeekNumber() {
-    const anchor = getActiveAnchor();
+    const DEFAULT_ANCHOR = { sundayISO: '2026-09-13', week: 5 };
+    let anchor = DEFAULT_ANCHOR;
+    try {
+      const raw = localStorage.getItem('currentAnchor.v1');
+      if (raw) anchor = JSON.parse(raw);
+    } catch {}
     const ref = new Date(anchor.sundayISO + 'T00:00:00');
     const now = new Date();
     now.setHours(0, 0, 0, 0);
@@ -935,15 +742,13 @@
     const currentSunday = new Date(now);
     currentSunday.setDate(now.getDate() - dayOfWeek);
     const diffDays = Math.round((currentSunday - ref) / 86400000);
-    const diffWeeks = Math.round(diffDays / 7);
-    let week = anchor.week + diffWeeks;
+    let week = anchor.week + Math.round(diffDays / 7);
     if (week < ALL_WEEKS[0]) week = ALL_WEEKS[0];
     if (week > ALL_WEEKS[ALL_WEEKS.length - 1]) week = ALL_WEEKS[ALL_WEEKS.length - 1];
     return week;
   }
 
   const CURRENT_WEEK = calculateWeekNumber();
-
   let byPerson = new Map();
   let byCategory = { added: [], sachi: [], hasb: [] };
 
@@ -953,7 +758,6 @@
 
     ALL_WEEKS.forEach((week) => {
       const d = WEEK_DATA[week];
-
       if (d.added) {
         const name = nameOf(d.added);
         const topic = getTopicFor(week, 'added');
@@ -979,66 +783,101 @@
           if (!byPerson.has(name)) byPerson.set(name, []);
           byPerson.get(name).push({ week, cat: 'hasb', topic });
         }
-        if (name || topic) {
-          byCategory.hasb.push({ week, name, topic });
-        }
+        if (name || topic) byCategory.hasb.push({ week, name, topic });
       }
     });
-
     byPerson.forEach((arr) => arr.sort((a, b) => a.week - b.week));
   }
-  rebuildIndexes();
 
-  const $  = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-
-  const grid = $('#weeksGrid');
-  const personList = $('#personList');
-  const personNoResults = $('#personNoResults');
-  const categoryList = $('#categoryList');
-  const searchInput = $('#search');
-  const clearBtn = $('#clearBtn');
-  const currentBadge = $('#currentBadge');
-  const toolbar = $('#toolbar');
-  const modal = $('#weekModal');
-  const modalBody = $('#modalBody');
-  const modalClose = $('#modalClose');
-
-  const helpModal = $('#helpModal');
-  const helpBtn = $('#helpBtn');
-  const helpClose = $('#helpClose');
-
-  let currentView = 'week';
-
-  const escapeHtml = (str) =>
-    String(str).replace(/[&<>"']/g, (c) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[c]));
-
-  const isEmpty = (v) => v === null || v === undefined || v === '';
-  const normalize = (str) => String(str || '').toLowerCase().trim();
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
   function renderCurrentBadge() {
-    const w = calculateWeekNumber();
-    currentBadge.innerHTML = '🗓️ השבוע הנוכחי: <strong>שבוע ' + w + '</strong>';
+    $('#currentBadge').innerHTML = '🗓️ השבוע הנוכחי: <strong>שבוע ' + CURRENT_WEEK + '</strong>';
   }
 
+  function renderPersonalDashboard() {
+    const content = $('#personalContent');
+    const dutyContainer = $('#dutyMenuContainer');
+    if (!content) return;
+
+    const userItems = byPerson.get(currentUser) || [];
+    const upcoming = userItems.filter(it => it.week >= CURRENT_WEEK);
+
+    let msgIndex = (currentUser.length + CURRENT_WEEK) % RANDOM_MESSAGES.length;
+    let randomMotto = RANDOM_MESSAGES[msgIndex];
+
+    let html = '<div style="margin-bottom: 6px; font-weight: 600; color: var(--primary-dark);">שלום, ' + currentUser + '! 👋</div>';
+    html += '<div style="font-style: italic; font-size: 0.88rem; color: #555; margin-bottom: 8px;">' + randomMotto + '</div>';
+    html += '<div style="font-size: 0.88rem; color: #444; margin-bottom: 6px;">⭐ חניך תורן נוכחי: <strong>' + (currentDuty || 'טרם נבחר') + '</strong></div>';
+
+    // כפתורי דיווח סטטוס לחניך תורן
+    html += '<div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #eaeaea;">' +
+      '<div style="font-size:0.85rem; font-weight:600; color:#555; margin-bottom:4px;">דיווח סטטוס לחניך תורן:</div>' +
+      '<div style="display:flex; gap:6px; flex-wrap:wrap;">' +
+      '<button type="button" class="action-btn" onclick="updateMyStatus(\'🏠 הגעתי הביתה\')">🏠 הגעתי הביתה</button>' +
+      '<button type="button" class="action-btn" onclick="updateMyStatus(\'🚌 בדרך הביתה\')">🚌 בדרך</button>' +
+      '<button type="button" class="action-btn" onclick="updateMyStatus(\'🏛️ נמצא בבסיס\')">🏛️ בבסיס</button>' +
+      '</div></div>';
+
+    if (upcoming.length === 0) {
+      html += '<p class="empty-slot" style="margin-top:8px;">אין לך פעילויות עתידיות ברשימה.</p>';
+    } else {
+      const next = upcoming[0];
+      const diff = next.week - CURRENT_WEEK;
+      const timeText = diff === 0 ? 'השבוע!' : (diff === 1 ? 'שבוע הבא' : 'עוד ' + diff + ' שבועות');
+
+      html += '<div class="personal-upcoming-item">' +
+        '<span>🎯 התור הקרוב שלך: <strong>שבוע ' + next.week + '</strong> (' + CAT_NAMES[next.cat] + ')</span>' +
+        '<span style="color: var(--current); font-weight:700;">' + timeText + '</span>' +
+        '</div>';
+    }
+    content.innerHTML = html;
+
+    // תפריט מורחב לחניך תורן בלבד שבו הוא רואה את הסטטוסים ומעדכן את המפקדים
+    if (currentDuty && currentUser === currentDuty) {
+      let tableRows = '';
+      Object.values(PEOPLE).forEach(pName => {
+        const st = memberStatuses[pName];
+        tableRows += '<tr><td>' + pName + '</td><td>' + (st ? st.text : '<span style="color:#888">טרם דיווח</span>') + '</td><td style="direction:ltr; text-align:right;">' + (st ? st.time : '-') + '</td></tr>';
+      });
+
+      dutyContainer.innerHTML = '<div class="duty-extended-menu">' +
+        '<h4>⭐ תפריט מורחב לחניך תורן (ריכוז דיווחים למפקדים)</h4>' +
+        '<table class="status-report-table"><tr><th>שם החניך</th><th>סטטוס</th><th>שעה</th></tr>' + tableRows + '</table>' +
+        '<div style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;">' +
+        '<button type="button" class="action-btn" style="background:#2e7d32; color:#fff;" onclick="copyCommandersReport()">📋 העתק סיכום דוח למפקדים</button>' +
+        '</div></div>';
+    } else {
+      dutyContainer.innerHTML = '';
+    }
+  }
+
+  // פונקציית העתקת דוח למפקדים
+  window.copyCommandersReport = function() {
+    let report = "📋 *דוח סטטוס קבוצתי למפקדים*:\n";
+    Object.values(PEOPLE).forEach(pName => {
+      const st = memberStatuses[pName];
+      report += "- " + pName + ": " + (st ? st.text + " (" + st.time + ")" : "טרם דיווח") + "\n";
+    });
+    navigator.clipboard.writeText(report).then(() => {
+      alert("הדוח הועתק ללוח! תוכל להדביק אותו כעת בוואטסאפ למפקדים.");
+    }).catch(() => {
+      alert("שגיאה בהעתקת הדוח.");
+    });
+  };
+
   function buildWeekButtons() {
+    const grid = $('#weeksGrid');
+    grid.innerHTML = '';
     const frag = document.createDocumentFragment();
 
     ALL_WEEKS.forEach((week) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'week-btn';
-      btn.dataset.week = week;
+      if (week === CURRENT_WEEK) btn.classList.add('current');
       btn.textContent = 'שבוע ' + week;
-      btn.setAttribute('role', 'tab');
-      btn.setAttribute('aria-selected', 'false');
-      btn.id = 'btn-week-' + week;
-      if (week === CURRENT_WEEK) {
-        btn.classList.add('current');
-        btn.setAttribute('aria-current', 'date');
-      }
       btn.addEventListener('click', () => openWeekModal(week));
       frag.appendChild(btn);
     });
@@ -1047,350 +886,99 @@
 
   function renderTopicLine(week, cat, topic) {
     const editable = (cat === 'added' || cat === 'sachi');
-
     if (topic) {
-      return '<div class="topic-line">' +
-        '<span class="topic-label">נושא:</span>' +
-        '<span class="topic-text">' + escapeHtml(topic) + '</span>' +
-        (editable
-          ? '<button type="button" class="edit-topic-btn" data-week="' + week + '" data-cat="' + cat + '" title="ערוך נושא" aria-label="ערוך נושא">✎</button>'
-          : '') +
-        '</div>';
+      return '<div class="topic-line"><span style="color:#999; font-size:0.8rem;">נושא:</span> <span>' + topic + '</span>' +
+        (editable ? ' <button type="button" class="edit-topic-btn" data-week="' + week + '" data-cat="' + cat + '">✎</button>' : '') + '</div>';
     }
-    if (editable) {
-      return '<div class="topic-line">' +
-        '<button type="button" class="add-topic-btn" data-week="' + week + '" data-cat="' + cat + '">+ הוסף נושא</button>' +
-        '</div>';
-    }
-    return '';
+    return editable ? '<div class="topic-line"><button type="button" class="add-topic-btn" data-week="' + week + '" data-cat="' + cat + '">+ הוסף נושא</button></div>' : '';
   }
-
-  function buildWeekCard(week) {
-    const data = WEEK_DATA[week];
-    const isCurrent = week === CURRENT_WEEK;
-
-    const addedName = isEmpty(data.added)
-      ? '<span class="empty-slot">אין פעילות</span>'
-      : escapeHtml(nameOf(data.added));
-
-    const sachiName = isEmpty(data.sachi)
-      ? '<span class="empty-slot">אין פעילות</span>'
-      : escapeHtml(nameOf(data.sachi));
-
-    const hasbName = (data.hasb && !isEmpty(data.hasb.trainee))
-      ? escapeHtml(nameOf(data.hasb.trainee))
-      : '<span class="empty-slot">אין פעילות</span>';
-
-    const currentTag = isCurrent ? ' <span class="current-tag">השבוע</span>' : '';
-
-    const addedRow = '<div class="category-row">' +
-      '<div class="category-name">ערך מוסף:</div>' +
-      '<div class="category-content">' +
-        '<span class="person-name">' + addedName + '</span>' +
-        (data.added ? renderTopicLine(week, 'added', getTopicFor(week, 'added')) : '') +
-      '</div></div>';
-
-    const sachiRow = '<div class="category-row">' +
-      '<div class="category-name">סח"י:</div>' +
-      '<div class="category-content">' +
-        '<span class="person-name">' + sachiName + '</span>' +
-        (data.sachi ? renderTopicLine(week, 'sachi', getTopicFor(week, 'sachi')) : '') +
-      '</div></div>';
-
-    const hasbRow = data.hasb
-      ? '<div class="category-row hasb">' +
-          '<div class="category-name">הסב"ש:</div>' +
-          '<div class="category-content">' +
-            '<span class="person-name">' + hasbName + '</span>' +
-            renderTopicLine(week, 'hasb', getTopicFor(week, 'hasb')) +
-          '</div></div>'
-      : '<div class="category-row hasb">' +
-          '<div class="category-name">הסב"ש:</div>' +
-          '<div class="category-content"><span class="empty-slot">אין פעילות</span></div>' +
-        '</div>';
-
-    let footer;
-    if (isCurrent) {
-      footer = '<div class="modal-footer">' +
-        '<span class="current-note">✓ זה השבוע הנוכחי</span>' +
-        '</div>';
-    } else {
-      const nextWeek = ALL_WEEKS.includes(week + 1) ? week + 1 : week;
-      footer = '<div class="modal-footer">' +
-        '<button type="button" class="set-current-btn" data-week="' + week + '">📌 קבע כשבוע הנוכחי</button>' +
-        '<div class="anchor-hint">' +
-          'מרגע זה המערכת תספור מהשבוע הזה.<br>' +
-          'בראשון הקרוב היא תתקדם אוטומטית ל<strong>שבוע ' + nextWeek + '</strong>, ואז לשבוע ' + (nextWeek + 1) + ' וכן הלאה.' +
-        '</div>' +
-        '</div>';
-    }
-
-    const wrap = document.createElement('div');
-    wrap.innerHTML =
-      '<h2 id="modalTitle">שבוע ' + week + currentTag + '</h2>' +
-      addedRow + sachiRow + hasbRow + footer;
-    return wrap;
-  }
-
-  let lastFocused = null;
-  let openWeekNum = null;
 
   function openWeekModal(week) {
-    lastFocused = document.activeElement;
-    openWeekNum = week;
-    modalBody.innerHTML = '';
-    modalBody.appendChild(buildWeekCard(week));
+    const data = WEEK_DATA[week];
+    const isCurrent = week === CURRENT_WEEK;
+    const modal = $('#weekModal');
+    const body = $('#modalBody');
+
+    let footer = isCurrent ? '<div class="modal-footer"><span class="current-note">✓ זה השבוע הנוכחי</span></div>' :
+      '<div class="modal-footer"><button type="button" class="set-current-btn" data-week="' + week + '">📌 קבע כשבוע הנוכחי</button></div>';
+
+    body.innerHTML = '<h2>שבוע ' + week + (isCurrent ? ' (השבוע)' : '') + '</h2>' +
+      '<div class="category-row"><div class="category-name">ערך מוסף:</div><div class="category-content"><span>' + (nameOf(data.added) || 'אין') + '</span>' + (data.added ? renderTopicLine(week, 'added', getTopicFor(week, 'added')) : '') + '</div></div>' +
+      '<div class="category-row"><div class="category-name">סח"י:</div><div class="category-content"><span>' + (nameOf(data.sachi) || 'אין') + '</span>' + (data.sachi ? renderTopicLine(week, 'sachi', getTopicFor(week, 'sachi')) : '') + '</div></div>' +
+      '<div class="category-row hasb"><div class="category-name">הסב"ש:</div><div class="category-content"><span>' + (data.hasb ? nameOf(data.hasb.trainee) : 'אין') + '</span>' + renderTopicLine(week, 'hasb', getTopicFor(week, 'hasb')) + '</div></div>' +
+      footer;
+
     modal.hidden = false;
-    document.body.style.overflow = 'hidden';
-
-    $$('.week-btn').forEach((b) => {
-      const on = Number(b.dataset.week) === week;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
-
-    requestAnimationFrame(() => modalClose.focus());
   }
 
-  function closeWeekModal() {
-    modal.hidden = true;
-    document.body.style.overflow = '';
-    openWeekNum = null;
-    $$('.week-btn').forEach((b) => {
-      b.classList.remove('active');
-      b.setAttribute('aria-selected', 'false');
-    });
-    if (lastFocused && typeof lastFocused.focus === 'function') {
-      lastFocused.focus();
-    }
-  }
-
-  modalClose.addEventListener('click', closeWeekModal);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeWeekModal();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !modal.hidden) closeWeekModal();
-  });
-
-  let helpLastFocused = null;
-
-  function openHelp() {
-    helpLastFocused = document.activeElement;
-    helpModal.hidden = false;
-    document.body.style.overflow = 'hidden';
-    requestAnimationFrame(() => helpClose.focus());
-  }
-  function closeHelp() {
-    helpModal.hidden = true;
-    document.body.style.overflow = '';
-    if (helpLastFocused && typeof helpLastFocused.focus === 'function') {
-      helpLastFocused.focus();
-    }
-  }
-
-  helpBtn.addEventListener('click', openHelp);
-  helpClose.addEventListener('click', closeHelp);
-  helpModal.addEventListener('click', (e) => {
-    if (e.target === helpModal) closeHelp();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !helpModal.hidden) closeHelp();
-    if (e.key === '?' && helpModal.hidden && modal.hidden) {
-      const tag = (e.target && e.target.tagName) || '';
-      if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
-        e.preventDefault();
-        openHelp();
-      }
-    }
-  });
+  $('#modalClose').addEventListener('click', () => $('#weekModal').hidden = true);
 
   document.addEventListener('click', (e) => {
-    const addBtn = e.target.closest('.add-topic-btn');
-    const editBtn = e.target.closest('.edit-topic-btn');
-    const btn = addBtn || editBtn;
-    if (!btn) return;
-
-    e.preventDefault();
-    const week = Number(btn.dataset.week);
-    const cat = btn.dataset.cat;
-    if (cat !== 'added' && cat !== 'sachi') return;
-
-    const existing = getTopicFor(week, cat) || '';
-    const msg = (editBtn ? 'ערוך נושא' : 'הוסף נושא') +
-      ' עבור ' + CAT_NAMES[cat] + ' בשבוע ' + week + ':';
-    const val = window.prompt(msg, existing);
-    if (val === null) return;
-
-    saveTopic(week, cat, val);
-
-    rebuildIndexes();
-    renderPersonView(searchInput.value);
-    renderCategoryView(searchInput.value);
-    if (!modal.hidden && openWeekNum === week) {
-      modalBody.innerHTML = '';
-      modalBody.appendChild(buildWeekCard(week));
+    const addBtn = e.target.closest('.add-topic-btn') || e.target.closest('.edit-topic-btn');
+    if (addBtn) {
+      const week = Number(addBtn.dataset.week);
+      const cat = addBtn.dataset.cat;
+      const val = prompt("הכנס נושא:", getTopicFor(week, cat) || '');
+      if (val !== null) saveTopicToCloud(week, cat, val);
     }
-  });
-
-  document.addEventListener('click', (e) => {
     const setBtn = e.target.closest('.set-current-btn');
     if (setBtn) {
-      setAnchorForWeek(Number(setBtn.dataset.week));
+      localStorage.setItem('currentAnchor.v1', JSON.stringify({ week: Number(setBtn.dataset.set || setBtn.dataset.week), sundayISO: '2026-09-13' }));
       location.reload();
     }
   });
 
-  function renderPersonView(query) {
-    const q = normalize(query);
-    const entries = Array.from(byPerson.entries())
-      .sort((a, b) => a[0].localeCompare(b[0], 'he'));
-
+  function renderPersonView(q) {
     let html = '';
-    let shown = 0;
-
-    entries.forEach(([name, items]) => {
-      if (q && !normalize(name).includes(q)) return;
-      shown++;
-
-      const rows = items.map((it) => {
-        const cls = [
-          it.topic ? 'has-topic' : '',
-          it.week === CURRENT_WEEK ? 'is-current' : ''
-        ].filter(Boolean).join(' ');
-
-        return '<li class="' + cls + '">' +
-          '<div class="row-head">' +
-            '<span class="week-badge">שבוע ' + it.week + '</span>' +
-            '<span class="cat-label">' + CAT_NAMES[it.cat] + '</span>' +
-          '</div>' +
-          renderTopicLine(it.week, it.cat, it.topic) +
-          '</li>';
-      }).join('');
-
-      html += '<div class="person-card">' +
-        '<h3>👤 ' + escapeHtml(name) +
-        '<span class="count">' + items.length + ' פעילויות</span></h3>' +
-        '<ul>' + rows + '</ul>' +
-        '</div>';
+    byPerson.forEach((items, name) => {
+      if (q && !name.includes(q)) return;
+      let rows = items.map(it => '<li><span class="week-badge">שבוע ' + it.week + '</span> <span>' + CAT_NAMES[it.cat] + '</span>' + renderTopicLine(it.week, it.cat, it.topic) + '</li>').join('');
+      html += '<div class="person-card"><h3>👤 ' + name + '</h3><ul>' + rows + '</ul></div>';
     });
-
-    personList.innerHTML = html;
-    personNoResults.classList.toggle('show', shown === 0);
+    $('#personList').innerHTML = html;
   }
 
-  function renderCategoryView(query) {
-    const q = normalize(query);
-
-    const sections = [
-      { key: 'added', title: '📘 ערך מוסף' },
-      { key: 'sachi', title: '🎯 סח"י' },
-      { key: 'hasb',  title: '🌿 הסב"ש' }
-    ];
-
+  function renderCategoryView(q) {
     let html = '';
-
-    sections.forEach((sec) => {
-      const all = byCategory[sec.key].slice().sort((a, b) => a.week - b.week);
-      const items = q
-        ? all.filter((it) =>
-            normalize(it.name).includes(q) ||
-            normalize(it.topic || '').includes(q))
-        : all;
-
-      const rows = items.length
-        ? items.map((it) => {
-            const cls = [
-              it.topic ? 'has-topic' : '',
-              it.week === CURRENT_WEEK ? 'is-current' : ''
-            ].filter(Boolean).join(' ');
-            const nameHtml = it.name
-              ? '<span class="person-name">' + escapeHtml(it.name) + '</span>'
-              : '<span class="empty-slot">—</span>';
-
-            return '<li class="' + cls + '">' +
-              '<div class="row-head">' +
-                '<span class="week-badge">שבוע ' + it.week + '</span>' +
-                nameHtml +
-              '</div>' +
-              renderTopicLine(it.week, sec.key, it.topic) +
-              '</li>';
-          }).join('')
-        : '<li><span class="empty-slot">אין פעילות</span></li>';
-
-      html += '<section class="category-section">' +
-        '<h3>' + sec.title + ' <span class="count">' + items.length + ' רשומות</span></h3>' +
-        '<ul>' + rows + '</ul>' +
-        '</section>';
+    ['added', 'sachi', 'hasb'].forEach(key => {
+      let items = byCategory[key];
+      if (q) items = items.filter(it => (it.name && it.name.includes(q)) || (it.topic && it.topic.includes(q)));
+      let rows = items.map(it => '<li><span class="week-badge">שבוע ' + it.week + '</span> <span>' + (it.name || '—') + '</span>' + renderTopicLine(it.week, key, it.topic) + '</li>').join('');
+      html += '<div class="category-section"><h3>🏷️ ' + CAT_NAMES[key] + '</h3><ul>' + rows + '</ul></div>';
     });
-
-    categoryList.innerHTML = html;
+    $('#categoryList').innerHTML = html;
   }
 
-  function applySearch() {
-    const q = searchInput.value;
-    if (currentView === 'person') renderPersonView(q);
-    else if (currentView === 'category') renderCategoryView(q);
-  }
-
-  const PLACEHOLDERS = {
-    week:     '',
-    person:   'חיפוש לפי שם...',
-    category: 'חיפוש לפי שם או נושא...'
-  };
-
-  function setView(view) {
-    currentView = view;
-    $$('.view-tab').forEach((t) => {
-      const on = t.dataset.view === view;
-      t.classList.toggle('active', on);
-      t.setAttribute('aria-selected', on ? 'true' : 'false');
+  $$('.view-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      $$('.view-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const view = tab.dataset.view;
+      $$('.view-panel').forEach(p => p.hidden = p.id !== 'view-' + view);
+      $('#toolbar').classList.toggle('hidden', view === 'week');
     });
-    $$('.view-panel').forEach((p) => {
-      p.hidden = p.id !== 'view-' + view;
-    });
-    toolbar.classList.toggle('hidden', view === 'week');
-    if (view !== 'week') {
-      searchInput.placeholder = PLACEHOLDERS[view];
-      searchInput.value = '';
-      applySearch();
-    }
-  }
+  });
 
-  window.renderViews = function() {
+  $('#search').addEventListener('input', (e) => {
+    const q = e.target.value.trim();
+    renderPersonView(q);
+    renderCategoryView(q);
+  });
+
+  $('#clearBtn').addEventListener('click', () => { $('#search').value = ''; renderPersonView(''); renderCategoryView(''); });
+  $('#helpBtn').addEventListener('click', () => $('#helpModal').hidden = false);
+  $('#helpClose').addEventListener('click', () => $('#helpModal').hidden = true);
+
+  function refreshUI() {
     rebuildIndexes();
-    renderPersonView(searchInput.value);
-    renderCategoryView(searchInput.value);
-    if (!modal.hidden && openWeekNum !== null) {
-      modalBody.innerHTML = '';
-      modalBody.appendChild(buildWeekCard(openWeekNum));
-    }
-  };
+    renderCurrentBadge();
+    renderPersonalDashboard();
+    buildWeekButtons();
+    renderPersonView('');
+    renderCategoryView('');
+  }
 
-  $$('.view-tab').forEach((tab) => {
-    tab.addEventListener('click', () => setView(tab.dataset.view));
-  });
-
-  searchInput.addEventListener('input', applySearch);
-
-  clearBtn.addEventListener('click', () => {
-    searchInput.value = '';
-    applySearch();
-    searchInput.focus();
-  });
-
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      searchInput.value = '';
-      applySearch();
-    }
-  });
-
-  renderCurrentBadge();
-  buildWeekButtons();
-  renderPersonView('');
-  renderCategoryView('');
+  checkAuthAndStart();
 })();
 </script>
 </body>
