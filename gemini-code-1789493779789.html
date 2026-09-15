@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אזור אישי ותורנות — סינכרון קבוצתי</title>
+
+<!-- ספריות ענן -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<style>
+  :root {
+    --primary: #2a5298;
+    --primary-dark: #1e3c72;
+    --primary-light: #f0f4ff;
+    --green: #2e7d32;
+    --current: #d97706;
+    --current-light: #fef3c7;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --text: #333;
+    --muted: #888;
+    --border: #e0e0e0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+
+  /* תפריט ניווט עליון */
+  .nav-bar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
+  }
+  .nav-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: #f8fafc;
+    color: var(--primary-dark);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { background: var(--primary-light); color: var(--primary); }
+  .nav-btn.active { background: var(--primary); color: #fff; }
+
+  .section-card {
+    background: var(--card);
+    border: 2px solid var(--primary);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 14px rgba(42,82,152,0.1);
+  }
+  .section-card h3 {
+    font-size: 1.15rem;
+    color: var(--primary-dark);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #eaeaea;
+    padding-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .personal-upcoming-item {
+    background: var(--primary-light);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .personal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .action-btn, select.action-select {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--primary-dark);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .action-btn:hover, select.action-select:hover { background: var(--primary-light); border-color: var(--primary); }
+
+  .duty-extended-menu {
+    margin-top: 14px;
+    padding: 14px;
+    background: var(--current-light);
+    border: 1px dashed var(--current);
+    border-radius: 8px;
+  }
+  .duty-extended-menu h4 {
+    font-size: 0.95rem;
+    color: #78350f;
+    margin-bottom: 8px;
+  }
+  .status-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 0.88rem;
+    background: #fff;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .status-report-table th, .status-report-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #eaeaea;
+    text-align: right;
+  }
+  .status-report-table th { background: #fef08a; color: #78350f; }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- תפריט ניווט עליון -->
+  <nav class="nav-bar">
+    <a href="board.html" class="nav-btn">📅 לוח ראשי</a>
+    <a href="personal.html" class="nav-btn active">👤 אזור אישי</a>
+    <a href="chat.html" class="nav-btn">💬 צ'אט קבוצתי</a>
+  </nav>
+
+  <div class="section-card" id="personalDashboard">
+    <h3 id="personalGreeting">
+      <span>👤 אזור אישי ותורנות</span>
+      <button type="button" class="action-btn" id="logoutBtn" style="font-size: 0.75rem; padding: 3px 8px;">התנתק</button>
+    </h3>
+    <div id="personalContent">מאמת נתונים מול הענן...</div>
+    <div class="personal-actions">
+      <button type="button" class="action-btn" id="changeCodeBtn">🔐 שינוי קוד</button>
+      <select id="dutySelector" class="action-select" aria-label="בחר חניך תורן">
+        <option value="">⭐ בחר חניך תורן...</option>
+      </select>
+      <button type="button" class="action-btn" id="notifBtn" style="background:#f0fdf4; color:#166534; border-color:#bbf7d0;">🔔 הפעל התראות</button>
+      <select id="notifPrefSelect" class="action-select" aria-label="הגדרות התראות">
+        <option value="all">התראות מכל הודעה</option>
+        <option value="duty">התראות מחניך תורן בלבד</option>
+      </select>
+    </div>
+    <!-- תפריט מורחב לחניך תורן בלבד -->
+    <div id="dutyMenuContainer"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  if (!localStorage.getItem('loggedUser')) {
+    window.location.href = 'index.html';
+  }
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB_AerhoBm-VJPqf25kOH1S4xGdauV2EDI",
+    authDomain: "group-hub-2026.firebaseapp.com",
+    projectId: "group-hub-2026",
+    storageBucket: "group-hub-2026.firebasestorage.app",
+    messagingSenderId: "816870308307",
+    appId: "1:816870308307:web:c3252cbb51f4f075d49726",
+    measurementId: "G-KMJ1H172PN"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const PEOPLE = {
+    aharonShemesh:    'אהרן שמש',
+    aharonPotesh:     'אהרן פוטש',
+    yaakovPotesh:     'יעקב פוטש',
+    ephraimResh:      'אפרים גוטליב (ר)',
+    ephraimBet:       'אפרים גוטליב (ב)',
+    yehudaKaufman:    'יהודה קויפמן',
+    avrahamGutstein:  'אברהם גוטשטיין',
+    asherPisrbavsky:  'אשר פיסרבסקי'
+  };
+
+  const RANDOM_MESSAGES = [
+    "\"החכמה היא לא לדעת מה להגיד, אלא מתי להגיד.\" 💡",
+    "\"עבודת צוות היא הכוח, כוחו של הכלל גדול מכוחו של הפרט.\" 🤝",
+    "\"כל התקדמות קטנה מקרבת אותך ליעד הגדול.\" 🚀",
+    "\"התמדה היא המפתח להצלחה בכל משימה.\" ⭐",
+    "\"שבוע מוצלח מתחיל בתיאום טוב ובראש צלול.\" 🎯"
+  ];
+
+  const nameOf = (key) => (key == null || key === '') ? null : (PEOPLE[key] || key);
+
+  const WEEK_DATA = {
+    2:  { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'גיוס לצה"ל ושליחות' } },
+    3:  { added: 'aharonPotesh',    sachi: 'asherPisrbavsky',        hasb: null },
+    4:  { added: 'yaakovPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'חגי תשרי' } },
+    5:  { added: 'ephraimResh',     sachi: 'yaakovPotesh',           hasb: null },
+    6:  { added: 'yehudaKaufman',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'ידיעת הארץ' } },
+    7:  { added: 'ephraimBet',      sachi: 'ephraimBet',             hasb: null },
+    8:  { added: 'avrahamGutstein', sachi: null,                     hasb: { trainee: 'ephraimBet',     topic: 'רצח רבין' } },
+    9:  { added: 'asherPisrbavsky', sachi: 'aharonShemesh',          hasb: null },
+    10: { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'ציונות' } },
+    11: { added: 'yaakovPotesh',    sachi: 'yaakovPotesh',           hasb: null },
+    12: { added: 'aharonPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'ירושלים' } },
+    13: { added: 'ephraimResh',     sachi: 'aharonPotesh',           hasb: null },
+    14: { added: 'ephraimBet',      sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'זהות וחברה ישראלית' } },
+    15: { added: 'yehudaKaufman',   sachi: 'yehudaKaufman',          hasb: null },
+    16: { added: 'avrahamGutstein', sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'איכות הסביבה' } },
+    17: { added: 'asherPisrbavsky', sachi: 'yaakovPotesh',           hasb: null },
+    18: { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'yehudaKaufman',  topic: 'גזענות וסטיגמות' } },
+    19: { added: 'yaakovPotesh',    sachi: 'aharonPotesh',           hasb: null },
+    20: { added: 'aharonPotesh',    sachi: null,                     hasb: { trainee: 'ephraimBet',     topic: 'המהפכה התעשייתית' } },
+    21: { added: 'ephraimResh',     sachi: 'avrahamGutstein',        hasb: null },
+    22: { added: 'ephraimBet',      sachi: null,                     hasb: { trainee: 'aharonPotesh',   topic: 'מבצע אנטבה' } },
+    23: { added: 'avrahamGutstein', sachi: 'aharonShemesh',          hasb: null },
+    24: { added: 'yehudaKaufman',   sachi: null,                     hasb: { trainee: 'avrahamGutstein',topic: 'עבודת צוות וכוחה של קבוצה' } },
+    25: { added: 'asherPisrbavsky', sachi: 'ephraimBet',             hasb: null },
+    26: { added: 'yaakovPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'ש"י עגנון' } },
+    27: { added: 'aharonShemesh',   sachi: 'avrahamGutstein',        hasb: null },
+    28: { added: null,              sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'מלחמת ששת הימים' } },
+    29: { added: null,              sachi: 'ephraimResh',            hasb: null },
+    30: { added: null,              sachi: null,                     hasb: { trainee: 'yehudaKaufman',  topic: 'מבצע קדש' } }
+  };
+
+  const ALL_WEEKS = Object.keys(WEEK_DATA).map(Number).sort((a, b) => a - b);
+  let currentUser = localStorage.getItem('loggedUser');
+  let currentDuty = "";
+  let memberStatuses = {};
+  let cloudTopics = {};
+
+  const notifPrefSelect = document.getElementById('notifPrefSelect');
+  if (notifPrefSelect) {
+    notifPrefSelect.value = localStorage.getItem('notifPref') || 'all';
+    notifPrefSelect.addEventListener('change', (e) => {
+      localStorage.setItem('notifPref', e.target.value);
+      alert("העדפת ההתראות עודכנה בהצלחה!");
+    });
+  }
+
+  function initApp() {
+    const dutySelector = document.getElementById('dutySelector');
+    dutySelector.innerHTML = '<option value="">⭐ בחר חניך תורן...</option>';
+    Object.values(PEOPLE).forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      dutySelector.appendChild(opt);
+    });
+
+    dutySelector.addEventListener('change', async (e) => {
+      const selectedName = e.target.value;
+      if (!selectedName) return;
+      try {
+        await db.collection("groupData").doc("metaMeta").set({ currentDuty: selectedName }, { merge: true });
+        alert("החניך התורן עודכן בהצלחה ל-" + selectedName);
+      } catch (err) {
+        alert("שגיאה בעדכון החניך התורן.");
+      }
+    });
+
+    db.collection("groupData").doc("customTopics").onSnapshot((doc) => {
+      cloudTopics = doc.data() || {};
+      renderDashboard();
+    });
+
+    db.collection("groupData").doc("metaMeta").onSnapshot((doc) => {
+      if (doc.exists) {
+        const data = doc.data();
+        currentDuty = data.currentDuty || "";
+        memberStatuses = data.memberStatuses || {};
+        const selector = document.getElementById('dutySelector');
+        if (selector) selector.value = currentDuty;
+      }
+      renderDashboard();
+    });
+  }
+
+  window.updateMyStatus = async function(statusText) {
+    try {
+      memberStatuses[currentUser] = { text: statusText, time: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) };
+      await db.collection("groupData").doc("metaMeta").set({ memberStatuses: memberStatuses }, { merge: true });
+      alert("הסטטוס שלך עודכן בהצלחה!");
+    } catch (e) {
+      alert("שגיאה בעדכון הסטטוס.");
+    }
+  };
+
+  window.sendDutyBroadcast = async function() {
+    const text = "📢 קריאה מחניך התורן (" + currentUser + "): נא לעדכן בהקדם האם הגעתם הביתה או מה הסטטוס שלכם!";
+    const chatRef = db.collection("groupData").doc("chatRoom");
+    try {
+      const doc = await chatRef.get();
+      let messages = (doc.exists && doc.data().messages) ? doc.data().messages : [];
+      const timeStr = new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+      messages.push({ id: 'msg_' + Date.now(), author: currentUser + " (תורן)", text: text, time: timeStr });
+      if (messages.length > 50) messages = messages.slice(messages.length - 50);
+      await chatRef.set({ messages: messages });
+      alert("התראה נשלחה בהצלחה לכל חברי הקבוצה בצ'אט!");
+    } catch (e) {
+      alert("שגיאה בשליחת ההתראה.");
+    }
+  };
+
+  document.getElementById('notifBtn').addEventListener('click', () => {
+    if (!("Notification" in window)) {
+      alert("הדפדפן שלך אינו תומך בהתראות.");
+    } else {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          alert("התראות הופעלו בהצלחה!");
+        } else {
+          alert("התראות נדחו.");
+        }
+      });
+    }
+  });
+
+  document.getElementById('changeCodeBtn').addEventListener('click', async () => {
+    let newCode = prompt("הכנס קוד אישי חדש (לפחות 4 תווים):");
+    if (!newCode || newCode.trim().length < 2) return;
+    try {
+      const snapshot = await db.collection("userCodes").where("name", "==", currentUser).get();
+      const batch = db.batch();
+      snapshot.forEach((doc) => { batch.delete(doc.ref); });
+      const newDocRef = db.collection("userCodes").doc(newCode.trim());
+      batch.set(newDocRef, { name: currentUser });
+      await batch.commit();
+      alert("הקוד האישי עודכן בהצלחה בענן!");
+    } catch (e) {
+      alert("שגיאה בעדכון הקוד בענן.");
+    }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('loggedUser');
+    window.location.href = 'index.html';
+  });
+
+  function calculateWeekNumberSync() {
+    const DEFAULT_ANCHOR = { sundayISO: '2026-09-13', week: 5 };
+    let anchor = DEFAULT_ANCHOR;
+    try {
+      const raw = localStorage.getItem('currentAnchor.v1');
+      if (raw) anchor = JSON.parse(raw);
+    } catch {}
+    const ref = new Date(anchor.sundayISO + 'T00:00:00');
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const dayOfWeek = now.getDay();
+    const currentSunday = new Date(now);
+    currentSunday.setDate(now.getDate() - dayOfWeek);
+    const diffDays = Math.round((currentSunday - ref) / 86400000);
+    let week = anchor.week + Math.round(diffDays / 7);
+    if (week < ALL_WEEKS[0]) week = ALL_WEEKS[0];
+    if (week > ALL_WEEKS[ALL_WEEKS.length - 1]) week = ALL_WEEKS[ALL_WEEKS.length - 1];
+    return week;
+  }
+
+  function renderDashboard() {
+    const content = document.getElementById('personalContent');
+    const dutyContainer = document.getElementById('dutyMenuContainer');
+    if (!content) return;
+
+    const currentWeekNum = calculateWeekNumberSync();
+    
+    let userItems = [];
+    ALL_WEEKS.forEach((week) => {
+      const d = WEEK_DATA[week];
+      if (d.added && nameOf(d.added) === currentUser) userItems.push({ week, cat: 'added' });
+      if (d.sachi && nameOf(d.sachi) === currentUser) userItems.push({ week, cat: 'sachi' });
+      if (d.hasb && nameOf(d.hasb.trainee) === currentUser) userItems.push({ week, cat: 'hasb' });
+    });
+
+    const upcoming = userItems.filter(it => it.week >= currentWeekNum);
+    let msgIndex = (currentWeekNum + currentUser.length) % RANDOM_MESSAGES.length;
+    let weeklyMotto = RANDOM_MESSAGES[msgIndex];
+
+    let html = '<div style="margin-bottom: 6px; font-weight: 600; color: var(--primary-dark);">שלום, ' + currentUser + '! 👋</div>';
+    html += '<div style="font-style: italic; font-size: 0.88rem; color: #555; margin-bottom: 8px;">⭐ משפט השבוע: ' + weeklyMotto + '</div>';
+    html += '<div style="font-size: 0.88rem; color: #444; margin-bottom: 6px;">⭐ חניך תורן נוכחי: <strong>' + (currentDuty || 'טרם נבחר') + '</strong></div>';
+
+    html += '<div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #eaeaea;">' +
+      '<div style="font-size:0.85rem; font-weight:600; color:#555; margin-bottom:4px;">דיווח סטטוס לחניך תורן:</div>' +
+      '<div style="display:flex; gap:6px; flex-wrap:wrap;">' +
+      '<button type="button" class="action-btn" onclick="updateMyStatus(\'🏠 הגעתי הביתה\')">🏠 הגעתי הביתה</button>' +
+      '<button type="button" class="action-btn" onclick="updateMyStatus(\'🚌 בדרך הביתה\')">🚌 בדרך</button>' +
+      '<button type="button" class="action-btn" onclick="updateMyStatus(\'🏛️ נמצא בבסיס\')">🏛️ בבסיס</button>' +
+      '</div></div>';
+
+    if (upcoming.length === 0) {
+      html += '<p class="empty-slot" style="margin-top:8px;">אין לך פעילויות עתידיות ברשימה.</p>';
+    } else {
+      const next = upcoming[0];
+      const diff = next.week - currentWeekNum;
+      const timeText = diff === 0 ? 'השבוע!' : (diff === 1 ? 'שבוע הבא' : 'עוד ' + diff + ' שבועות');
+
+      html += '<div class="personal-upcoming-item">' +
+        '<span>🎯 התור הקרוב שלך: <strong>שבוע ' + next.week + '</strong></span>' +
+        '<span style="color: var(--current); font-weight:700;">' + timeText + '</span>' +
+        '</div>';
+    }
+    content.innerHTML = html;
+
+    if (currentDuty && currentUser === currentDuty) {
+      let tableRows = '';
+      Object.values(PEOPLE).forEach(pName => {
+        const st = memberStatuses[pName];
+        tableRows += '<tr><td>' + pName + '</td><td>' + (st ? st.text : '<span style="color:#888">טרם דיווח</span>') + '</td><td style="direction:ltr; text-align:right;">' + (st ? st.time : '-') + '</td></tr>';
+      });
+
+      dutyContainer.innerHTML = '<div class="duty-extended-menu">' +
+        '<h4>⭐ תפריט מורחב לחניך תורן</h4>' +
+        '<div style="margin-bottom:8px;">' +
+        '<button type="button" class="action-btn" style="background:var(--current); color:#fff; border:none;" onclick="sendDutyBroadcast()">📢 שלח התראה לכולם לעדכן הגעה הביתה</button>' +
+        '</div>' +
+        '<table class="status-report-table"><tr><th>שם החניך</th><th>סטטוס</th><th>שעה</th></tr>' + tableRows + '</table>' +
+        '<div style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;">' +
+        '<button type="button" class="action-btn" style="background:#2e7d32; color:#fff;" onclick="copyCommandersReport()">📋 העתק סיכום דוח למפקדים</button>' +
+        '</div></div>';
+    } else {
+      dutyContainer.innerHTML = '';
+    }
+  }
+
+  window.copyCommandersReport = function() {
+    let report = "📋 *דוח סטטוס קבוצתי למפקדים*:\n";
+    Object.values(PEOPLE).forEach(pName => {
+      const st = memberStatuses[pName];
+      report += "- " + pName + ": " + (st ? st.text + " (" + st.time + ")" : "טרם דיווח") + "\n";
+    });
+    navigator.clipboard.writeText(report).then(() => {
+      alert("הדוח הועתק ללוח!");
+    }).catch(() => {
+      alert("שגיאה בהעתקת הדוח.");
+    });
+  };
+
+  initApp();
+})();
+</script>
+</body>
+</html>
