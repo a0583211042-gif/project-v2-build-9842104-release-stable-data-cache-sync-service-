@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>צ'אט קבוצתי ותקשורת — סינכרון קבוצתי</title>
+
+<!-- ספריות ענן -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<style>
+  :root {
+    --primary: #2a5298;
+    --primary-dark: #1e3c72;
+    --primary-light: #f0f4ff;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --text: #333;
+    --muted: #888;
+    --border: #e0e0e0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+
+  /* תפריט ניווט עליון */
+  .nav-bar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
+  }
+  .nav-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: #f8fafc;
+    color: var(--primary-dark);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { background: var(--primary-light); color: var(--primary); }
+  .nav-btn.active { background: var(--primary); color: #fff; }
+
+  .section-card {
+    background: var(--card);
+    border: 2px solid var(--primary);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 14px rgba(42,82,152,0.1);
+  }
+  .section-card h3 {
+    font-size: 1.15rem;
+    color: var(--primary-dark);
+    margin-bottom: 12px;
+    border-bottom: 2px solid #eaeaea;
+    padding-bottom: 8px;
+  }
+
+  .chat-messages {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .chat-msg {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    position: relative;
+  }
+  .chat-msg .author { font-weight: 700; color: var(--primary-dark); margin-inline-end: 6px; }
+  .chat-msg .time { font-size: 0.75rem; color: var(--muted); float: left; }
+  .chat-msg img, .chat-msg video {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 6px;
+    margin-top: 6px;
+    display: block;
+  }
+  .delete-msg-btn {
+    background: none;
+    border: none;
+    color: #dc2626;
+    font-size: 0.78rem;
+    cursor: pointer;
+    margin-top: 4px;
+    float: left;
+    font-weight: 600;
+  }
+  .chat-input-row { display: flex; gap: 8px; align-items: center; }
+  .chat-input-row input[type="text"] {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 0.95rem;
+  }
+  .file-upload-label {
+    padding: 9px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .file-upload-label:hover { background: var(--primary-light); }
+  .chat-input-row button.send-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(42,82,152,0.25);
+  }
+  .chat-input-row button.send-btn:hover { opacity: 0.92; }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- תפריט ניווט עליון -->
+  <nav class="nav-bar">
+    <a href="board.html" class="nav-btn">📅 לוח ראשי</a>
+    <a href="personal.html" class="nav-btn">👤 אזור אישי</a>
+    <a href="chat.html" class="nav-btn active">💬 צ'אט קבוצתי</a>
+  </nav>
+
+  <div class="section-card">
+    <h3>💬 צ'אט קבוצתי ותקשורת חיה</h3>
+    <div class="chat-messages" id="chatMessagesBox">טוען הודעות...</div>
+    <div class="chat-input-row">
+      <label for="chatFileInput" class="file-upload-label" title="צרף תמונה או סרטון">📎</label>
+      <input type="file" id="chatFileInput" accept="image/*,video/*" style="display:none">
+      <input type="text" id="chatInput" placeholder="כתוב הודעה או צרף מדיה...">
+      <button type="button" class="send-btn" id="chatSendBtn">שלח</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  if (!localStorage.getItem('loggedUser')) {
+    window.location.href = 'index.html';
+  }
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB_AerhoBm-VJPqf25kOH1S4xGdauV2EDI",
+    authDomain: "group-hub-2026.firebaseapp.com",
+    projectId: "group-hub-2026",
+    storageBucket: "group-hub-2026.firebasestorage.app",
+    messagingSenderId: "816870308307",
+    appId: "1:816870308307:web:c3252cbb51f4f075d49726",
+    measurementId: "G-KMJ1H172PN"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const currentUser = localStorage.getItem('loggedUser');
+
+  db.collection("groupData").doc("chatRoom").onSnapshot((doc) => {
+    const messages = (doc.exists && doc.data().messages) ? doc.data().messages : [];
+    renderChatMessages(messages);
+    
+    if (messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg.author !== currentUser && Notification.permission === "granted") {
+        const pref = localStorage.getItem('notifPref') || 'all';
+        const isFromDuty = lastMsg.author.includes("תורן");
+        
+        if (pref === 'all' || (pref === 'duty' && isFromDuty)) {
+          new Notification("הודעה חדשה בקבוצה (" + lastMsg.author + ")", {
+            body: lastMsg.text || "[קובץ מדיה]",
+            icon: "https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/anonymous.svg"
+          });
+        }
+      }
+    }
+  });
+
+  async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const fileInput = document.getElementById('chatFileInput');
+    const text = input.value.trim();
+    const file = fileInput.files[0];
+
+    if (!text && !file) return;
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const mediaUrl = e.target.result;
+        const mediaType = file.type.startsWith('video') ? 'video' : 'image';
+        await pushMessageToCloud(text, mediaUrl, mediaType);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      await pushMessageToCloud(text, null, null);
+    }
+  }
+
+  async function pushMessageToCloud(text, mediaUrl, mediaType) {
+    try {
+      const chatRef = db.collection("groupData").doc("chatRoom");
+      const doc = await chatRef.get();
+      let messages = (doc.exists && doc.data().messages) ? doc.data().messages : [];
+      
+      const timeStr = new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+      const msgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+      
+      messages.push({
+        id: msgId,
+        author: currentUser,
+        text: text,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType,
+        time: timeStr
+      });
+      
+      if (messages.length > 50) messages = messages.slice(messages.length - 50);
+
+      await chatRef.set({ messages: messages });
+      document.getElementById('chatInput').value = "";
+      document.getElementById('chatFileInput').value = "";
+    } catch (e) {
+      alert("שגיאה בשליחת ההודעה או הקובץ.");
+    }
+  }
+
+  window.deleteChatMessage = async function(msgId) {
+    if (!confirm("האם למחוק את ההודעה?")) return;
+    const chatRef = db.collection("groupData").doc("chatRoom");
+    try {
+      const doc = await chatRef.get();
+      if (doc.exists) {
+        let messages = doc.data().messages || [];
+        messages = messages.filter(m => m.id !== msgId);
+        await chatRef.set({ messages: messages });
+      }
+    } catch (e) {
+      alert("שגיאה במחיקת ההודעה.");
+    }
+  };
+
+  document.getElementById('chatSendBtn').addEventListener('click', sendChatMessage);
+  document.getElementById('chatInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendChatMessage();
+  });
+
+  function renderChatMessages(messages) {
+    const box = document.getElementById('chatMessagesBox');
+    if (!messages.length) {
+      box.innerHTML = '<div style="color:var(--muted); text-align:center; font-style:italic; padding:10px;">אין הודעות עדיין. היה הראשונים לכתוב!</div>';
+      return;
+    }
+    box.innerHTML = messages.map(m => {
+      let mediaHtml = '';
+      if (m.mediaUrl) {
+        if (m.mediaType === 'video') {
+          mediaHtml = '<video controls src="' + m.mediaUrl + '"></video>';
+        } else {
+          mediaHtml = '<img src="' + m.mediaUrl + '" alt="תמונה שצורפה">';
+        }
+      }
+      const deleteBtn = (m.author === currentUser || m.author.includes(currentUser)) 
+        ? '<button type="button" class="delete-msg-btn" onclick="deleteChatMessage(\'' + m.id + '\')">מחק הודעה</button>' 
+        : '';
+
+      return '<div class="chat-msg">' +
+        '<span class="time">' + m.time + '</span>' +
+        '<span class="author">' + m.author + ':</span> ' +
+        '<span>' + (m.text || '') + '</span>' +
+        mediaHtml +
+        deleteBtn +
+        '</div>';
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+  }
+})();
+</script>
+</body>
+</html>
