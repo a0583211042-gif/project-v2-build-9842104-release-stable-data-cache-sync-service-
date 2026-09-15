@@ -190,24 +190,27 @@
   const db = firebase.firestore();
   const currentUser = localStorage.getItem('loggedUser');
 
+  let lastMsgCount = 0;
   db.collection("groupData").doc("chatRoom").onSnapshot((doc) => {
     const messages = (doc.exists && doc.data().messages) ? doc.data().messages : [];
     renderChatMessages(messages);
     
-    if (messages.length > 0) {
+    // מנגנון התראות מובטח
+    if (messages.length > lastMsgCount && lastMsgCount > 0) {
       const lastMsg = messages[messages.length - 1];
       if (lastMsg.author !== currentUser && Notification.permission === "granted") {
         const pref = localStorage.getItem('notifPref') || 'all';
         const isFromDuty = lastMsg.author.includes("תורן");
         
         if (pref === 'all' || (pref === 'duty' && isFromDuty)) {
-          new Notification("הודעה חדשה בקבוצה (" + lastMsg.author + ")", {
+          new Notification("הודעה חדשה (" + lastMsg.author + ")", {
             body: lastMsg.text || "[קובץ מדיה]",
             icon: "https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/anonymous.svg"
           });
         }
       }
     }
+    lastMsgCount = messages.length;
   });
 
   async function sendChatMessage() {
