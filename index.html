@@ -1,6 +1,4 @@
-          localStorage.setItem('loggedUser', userName);
-          window.location.href = 'board.html';
-        } else {<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -40,20 +38,40 @@
   }
   h1 { color: var(--primary-dark); font-size: 1.5rem; margin-bottom: 10px; }
   p { color: #666; font-size: 0.95rem; margin-bottom: 20px; }
-  input[type="text"] {
+  
+  .input-wrapper {
+    position: relative;
     width: 100%;
-    padding: 12px;
+    margin-bottom: 15px;
+  }
+  input[type="password"], input[type="text"] {
+    width: 100%;
+    padding: 12px 45px 12px 15px;
     border-radius: 10px;
     border: 2px solid #ddd;
     font-size: 1.2rem;
     text-align: center;
     direction: ltr;
-    margin-bottom: 15px;
+    unicode-bidi: bidi-override;
     outline: none;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
   }
-  input[type="text"]:focus { border-color: var(--primary); }
-  button {
+  input:focus { border-color: var(--primary); }
+  
+  .toggle-eye {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #666;
+    padding: 4px;
+  }
+
+  button.submit-btn {
     width: 100%;
     padding: 12px;
     border-radius: 10px;
@@ -65,15 +83,20 @@
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(42,82,152,0.3);
   }
-  button:hover { opacity: 0.9; }
+  button.submit-btn:hover { opacity: 0.9; }
 </style>
 </head>
 <body>
 <div class="login-card">
   <h1>🔐 כניסה למערכת</h1>
   <p>הקלד את הקוד האישי שלך כדי להמשיך</p>
-  <input type="text" id="codeInput" placeholder="****" autocomplete="current-password" maxlength="10">
-  <button type="button" id="loginBtn">כניסה למערכת</button>
+  
+  <div class="input-wrapper">
+    <input type="password" id="codeInput" placeholder="****" autocomplete="current-password" maxlength="10">
+    <button type="button" id="toggleEye" class="toggle-eye" title="הצג/הסתר קוד">👁️</button>
+  </div>
+
+  <button type="button" id="loginBtn" class="submit-btn">כניסה למערכת</button>
 </div>
 
 <script>
@@ -89,12 +112,25 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
+  // מנגנון הצג/הסתר קוד (עינית)
+  const codeInput = document.getElementById('codeInput');
+  const toggleEye = document.getElementById('toggleEye');
+  toggleEye.addEventListener('click', () => {
+    if (codeInput.type === 'password') {
+      codeInput.type = 'text';
+      toggleEye.textContent = '🙈';
+    } else {
+      codeInput.type = 'password';
+      toggleEye.textContent = '👁️';
+    }
+  });
+
   async function handleLogin() {
-    const code = document.getElementById('codeInput').value.trim();
+    const code = codeInput.value.trim();
     if (!code) { alert("נא להקליד קוד"); return; }
 
     try {
-      // בדיקה חכמה מול שני שמות אפשריים למסמך בפיירבייס
+      // בדיקה מול המסמך "קודי הגדרות" בענן
       let docRef = db.collection("groupData").doc("קודי הגדרות");
       let docSnap = await docRef.get();
 
@@ -103,21 +139,6 @@
         docSnap = await docRef.get();
       }
 
-      // אם המסמך עדיין לא קיים כלל בענן, ניצור אותו אוטומטית עם הקודים!
-      if (!docSnap.exists) {
-        const defaultCodes = {
-          "1234": "אהרן שמש",
-          "2345": "אהרן פוטש",
-          "3456": "יעקב פוטש",
-          "4567": "אפרים גוטליב (ר)",
-          "5678": "אפרים גוטליב (ב)",
-          "6789": "יהודה קויפמן",
-          "7890": "אברהם גוטשטיין"
-        };
-        await docRef.set(defaultCodes);
-        docSnap = await docRef.get();
-      }
-      
       if (docSnap.exists) {
         const codesMap = docSnap.data();
         if (codesMap[code]) {
@@ -128,7 +149,7 @@
           alert("קוד שגוי!");
         }
       } else {
-        alert("שגיאה בטעינת הקודים מהענן.");
+        alert("מסמך הקודים אינו נמצא בענן.");
       }
     } catch (e) {
       alert("שגיאת התחברות מול הענן.");
@@ -136,28 +157,7 @@
   }
 
   document.getElementById('loginBtn').addEventListener('click', handleLogin);
-  document.getElementById('codeInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleLogin();
-  });
-
-  if (localStorage.getItem('loggedUser')) {
-    window.location.href = 'board.html';
-  }
-</script>
-</body>
-</html>
-          alert("קוד שגוי!");
-        }
-      } else {
-        alert("מסמך הקודים לא נמצא בענן.");
-      }
-    } catch (e) {
-      alert("שגיאת התחברות מול הענן.");
-    }
-  }
-
-  document.getElementById('loginBtn').addEventListener('click', handleLogin);
-  document.getElementById('codeInput').addEventListener('keydown', (e) => {
+  codeInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') handleLogin();
   });
 
