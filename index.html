@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+          localStorage.setItem('loggedUser', userName);
+          window.location.href = 'board.html';
+        } else {<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -38,17 +40,19 @@
   }
   h1 { color: var(--primary-dark); font-size: 1.5rem; margin-bottom: 10px; }
   p { color: #666; font-size: 0.95rem; margin-bottom: 20px; }
-  input[type="password"] {
+  input[type="text"] {
     width: 100%;
     padding: 12px;
     border-radius: 10px;
     border: 2px solid #ddd;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     text-align: center;
+    direction: ltr;
     margin-bottom: 15px;
     outline: none;
+    letter-spacing: 2px;
   }
-  input[type="password"]:focus { border-color: var(--primary); }
+  input[type="text"]:focus { border-color: var(--primary); }
   button {
     width: 100%;
     padding: 12px;
@@ -67,8 +71,8 @@
 <body>
 <div class="login-card">
   <h1>🔐 כניסה למערכת</h1>
-  <p>הכנס את הקוד האישי שלך כדי להמשיך</p>
-  <input type="password" id="codeInput" placeholder="הקלד קוד אישי..." autocomplete="current-password">
+  <p>הקלד את הקוד האישי שלך כדי להמשיך</p>
+  <input type="text" id="codeInput" placeholder="****" autocomplete="current-password" maxlength="10">
   <button type="button" id="loginBtn">כניסה למערכת</button>
 </div>
 
@@ -90,8 +94,29 @@
     if (!code) { alert("נא להקליד קוד"); return; }
 
     try {
-      const docRef = db.collection("groupData").doc("קודי הגדרות");
-      const docSnap = await docRef.get();
+      // בדיקה חכמה מול שני שמות אפשריים למסמך בפיירבייס
+      let docRef = db.collection("groupData").doc("קודי הגדרות");
+      let docSnap = await docRef.get();
+
+      if (!docSnap.exists) {
+        docRef = db.collection("groupData").doc("configCodes");
+        docSnap = await docRef.get();
+      }
+
+      // אם המסמך עדיין לא קיים כלל בענן, ניצור אותו אוטומטית עם הקודים!
+      if (!docSnap.exists) {
+        const defaultCodes = {
+          "1234": "אהרן שמש",
+          "2345": "אהרן פוטש",
+          "3456": "יעקב פוטש",
+          "4567": "אפרים גוטליב (ר)",
+          "5678": "אפרים גוטליב (ב)",
+          "6789": "יהודה קויפמן",
+          "7890": "אברהם גוטשטיין"
+        };
+        await docRef.set(defaultCodes);
+        docSnap = await docRef.get();
+      }
       
       if (docSnap.exists) {
         const codesMap = docSnap.data();
@@ -100,6 +125,27 @@
           localStorage.setItem('loggedUser', userName);
           window.location.href = 'board.html';
         } else {
+          alert("קוד שגוי!");
+        }
+      } else {
+        alert("שגיאה בטעינת הקודים מהענן.");
+      }
+    } catch (e) {
+      alert("שגיאת התחברות מול הענן.");
+    }
+  }
+
+  document.getElementById('loginBtn').addEventListener('click', handleLogin);
+  document.getElementById('codeInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  if (localStorage.getItem('loggedUser')) {
+    window.location.href = 'board.html';
+  }
+</script>
+</body>
+</html>
           alert("קוד שגוי!");
         }
       } else {
