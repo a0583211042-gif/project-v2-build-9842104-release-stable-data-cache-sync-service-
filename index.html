@@ -1,9 +1,95 @@
-async function handleLogin() {
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>כניסה למערכת — סינכרון שבועות</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>
+  :root {
+    --primary: #2a5298;
+    --primary-dark: #1e3c72;
+    --primary-light: #f0f4ff;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --text: #333;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .login-card {
+    background: var(--card);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    border: 2px solid var(--primary);
+  }
+  h1 { color: var(--primary-dark); font-size: 1.5rem; margin-bottom: 10px; }
+  p { color: #666; font-size: 0.95rem; margin-bottom: 20px; }
+  input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #ddd;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 15px;
+    outline: none;
+  }
+  input[type="password"]:focus { border-color: var(--primary); }
+  button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(42,82,152,0.3);
+  }
+  button:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+<div class="login-card">
+  <h1>🔐 כניסה למערכת</h1>
+  <p>הכנס את הקוד האישי שלך כדי להמשיך</p>
+  <input type="password" id="codeInput" placeholder="הקלד קוד אישי..." autocomplete="current-password">
+  <button type="button" id="loginBtn">כניסה למערכת</button>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB_AerhoBm-VJPqf25kOH1S4xGdauV2EDI",
+    authDomain: "group-hub-2026.firebaseapp.com",
+    projectId: "group-hub-2026",
+    storageBucket: "group-hub-2026.firebasestorage.app",
+    messagingSenderId: "816870308307",
+    appId: "1:816870308307:web:c3252cbb51f4f075d49726",
+    measurementId: "G-KMJ1H172PN"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  async function handleLogin() {
     const code = document.getElementById('codeInput').value.trim();
     if (!code) { alert("נא להקליד קוד"); return; }
 
     try {
-      // בדיקה מול המסמך "קודי הגדרות" בדיוק כפי שיצרת בפיירבייס
       const docRef = db.collection("groupData").doc("קודי הגדרות");
       const docSnap = await docRef.get();
       
@@ -12,7 +98,7 @@ async function handleLogin() {
         if (codesMap[code]) {
           const userName = codesMap[code];
           localStorage.setItem('loggedUser', userName);
-          window.location.href = 'board.html'; // מעבר ללוח הראשי
+          window.location.href = 'board.html';
         } else {
           alert("קוד שגוי!");
         }
@@ -23,3 +109,15 @@ async function handleLogin() {
       alert("שגיאת התחברות מול הענן.");
     }
   }
+
+  document.getElementById('loginBtn').addEventListener('click', handleLogin);
+  document.getElementById('codeInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  if (localStorage.getItem('loggedUser')) {
+    window.location.href = 'board.html';
+  }
+</script>
+</body>
+</html>
