@@ -112,6 +112,74 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
+  const codeInput = document.getElementById('codeInput');
+  const toggleEye = document.getElementById('toggleEye');
+  
+  toggleEye.addEventListener('click', () => {
+    if (codeInput.type === 'password') {
+      codeInput.type = 'text';
+      toggleEye.textContent = '🙈';
+    } else {
+      codeInput.type = 'password';
+      toggleEye.textContent = '👁️';
+    }
+  });
+
+  async function handleLogin() {
+    const code = codeInput.value.trim();
+    if (!code) { alert("נא להקליד קוד"); return; }
+
+    try {
+      let docRef = db.collection("groupData").doc("קודי הגדרות");
+      let docSnap = await docRef.get();
+
+      if (!docSnap.exists) {
+        docRef = db.collection("groupData").doc("configCodes");
+        docSnap = await docRef.get();
+      }
+
+      if (docSnap.exists) {
+        const codesMap = docSnap.data();
+        if (codesMap[code]) {
+          const userName = codesMap[code];
+          localStorage.setItem('loggedUser', userName);
+          window.location.href = 'board.html';
+        } else {
+          alert("קוד שגוי!");
+        }
+      } else {
+        alert("מסמך הקודים אינו נמצא בענן.");
+      }
+    } catch (e) {
+      alert("שגיאת התחברות מול הענן.");
+    }
+  }
+
+  document.getElementById('loginBtn').addEventListener('click', handleLogin);
+  codeInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  if (localStorage.getItem('loggedUser')) {
+    window.location.href = 'board.html';
+  }
+</script>
+</body>
+</html></div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB_AerhoBm-VJPqf25kOH1S4xGdauV2EDI",
+    authDomain: "group-hub-2026.firebaseapp.com",
+    projectId: "group-hub-2026",
+    storageBucket: "group-hub-2026.firebasestorage.app",
+    messagingSenderId: "816870308307",
+    appId: "1:816870308307:web:c3252cbb51f4f075d49726",
+    measurementId: "G-KMJ1H172PN"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
   // מנגנון הצג/הסתר קוד (עינית)
   const codeInput = document.getElementById('codeInput');
   const toggleEye = document.getElementById('toggleEye');
