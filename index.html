@@ -1,761 +1,648 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>סינכרון שבועות — מערכת קבוצתית</title>
-
-<!-- ספריות ענן (Firebase) -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#020617">
+<title>לוח שבועות ראשי — סינכרון קבוצתי</title>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <style>
-  :root {
-    --primary: #2a5298;
-    --primary-dark: #1e3c72;
-    --primary-light: #f0f4ff;
-    --green: #2e7d32;
-    --current: #d97706;
-    --current-light: #fef3c7;
-    --bg: #f4f6f9;
-    --card: #ffffff;
-    --text: #333;
-    --muted: #888;
-    --border: #e0e0e0;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    padding: 20px;
-    min-height: 100vh;
-  }
-  .container { max-width: 900px; margin: 0 auto; }
+:root{
+  --bg: #020617;
+  --surface: rgba(15, 23, 42, 0.75);
+  --surface-hover: rgba(30, 41, 59, 0.88);
+  --border: rgba(148, 163, 184, 0.14);
+  --border-glow: rgba(56, 189, 248, 0.45);
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --primary: #3b82f6;
+  --primary-glow: rgba(59, 130, 246, 0.45);
+  --accent: #06b6d4;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --radius: 26px;
+  --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background: 
+    radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.15), transparent 40%),
+    radial-gradient(circle at 90% 90%, rgba(6, 182, 212, 0.12), transparent 40%),
+    var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  padding:20px;
+  min-height:100vh;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
 
-  /* --- בלוק עיצוב: מסך כניסה --- */
-  #loginScreen {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 80vh;
-  }
-  .login-card {
-    background: var(--card);
-    padding: 30px;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
-    border: 2px solid var(--primary);
-  }
-  .login-card h1 { color: var(--primary-dark); font-size: 1.5rem; margin-bottom: 10px; }
-  .login-card p { color: #666; font-size: 0.95rem; margin-bottom: 20px; }
-  
-  .input-wrapper {
-    position: relative;
-    width: 100%;
-    margin-bottom: 15px;
-  }
-  input[type="password"], input[type="text"], input[type="search"] {
-    width: 100%;
-    padding: 12px 45px 12px 15px;
-    border-radius: 10px;
-    border: 2px solid #ddd;
-    font-size: 1.2rem;
-    text-align: center;
-    outline: none;
-  }
-  .login-card input { direction: ltr; unicode-bidi: bidi-override; letter-spacing: 3px; }
-  input:focus { border-color: var(--primary); }
-  
-  .toggle-eye {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    color: #666;
-    padding: 4px;
-  }
+/* דף כניסה מאובטח פלאגשיפ */
+#loginScreen{
+  min-height:100vh;display:grid;place-items:center;padding:24px;position:relative;overflow:hidden;
+}
+#loginScreen::before{
+  content:'';position:absolute;width:600px;height:600px;background:var(--primary);
+  filter:blur(180px);opacity:0.2;border-radius:50%;z-index:0;
+}
+.login-shell{width:min(440px,100%);position:relative;z-index:1}
+.brand-mark{
+  width:96px;height:96px;border-radius:32px;
+  background:linear-gradient(135deg, var(--primary), var(--accent));
+  display:grid;place-items:center;font-size:44px;
+  box-shadow: 0 20px 40px var(--primary-glow), inset 0 2px 6px rgba(255,255,255,0.4);
+  margin:0 auto 28px;border:1px solid rgba(255,255,255,0.3);
+}
+.login-card{
+  background: var(--surface);backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--border);border-radius: var(--radius);
+  padding: 48px 38px;box-shadow: var(--shadow);text-align: center;
+}
+.login-card h1{margin:0 0 8px;font-size:36px;font-weight:900;letter-spacing:-0.5px;color:#fff}
+.login-card .sub{color:var(--muted);margin:0 0 36px;font-size:14px;font-weight:500}
+.google-login-btn{
+  width:100%;border:0;border-radius:20px;height:60px;
+  background:#ffffff;color:#0f172a;font-weight:800;font-size:16px;
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.google-login-btn:hover{background:#f1f5f9;transform: translateY(-3px);box-shadow: 0 15px 35px var(--primary-glow)}
+.login-note{font-size:12px;color:var(--muted);margin-top:28px;line-height:1.6}
 
-  .submit-btn {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-    color: #fff;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(42,82,152,0.3);
-  }
-  .submit-btn:hover { opacity: 0.9; }
+#mainApp{display:none;min-height:100vh}
+.container { max-width: 960px; margin: 0 auto; }
 
-  /* --- בלוק עיצוב: ממשק האתר הראשי --- */
-  #mainApp { display: none; }
+.nav-bar { 
+  display: flex; justify-content: center; gap: 10px; margin-bottom: 24px; 
+  background: var(--surface); backdrop-filter: blur(25px); 
+  padding: 12px; border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
+  border: 1px solid var(--border); 
+}
+.nav-btn { 
+  padding: 10px 18px; border-radius: 12px; border: none; 
+  background: rgba(255,255,255,0.03); color: var(--muted); 
+  font-weight: 700; font-size: 0.95rem; cursor: pointer; text-decoration: none; transition: 0.2s; 
+}
+.nav-btn:hover { background: rgba(59,130,246,0.15); color: #fff; }
+.nav-btn.active { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; box-shadow: 0 5px 15px var(--primary-glow); }
 
-  .nav-bar {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 20px;
-    background: #fff;
-    padding: 10px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    border: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .nav-btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    background: #f8fafc;
-    color: var(--primary-dark);
-    font-weight: 700;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .nav-btn:hover { background: var(--primary-light); color: var(--primary); }
-  .nav-btn.active { background: var(--primary); color: #fff; }
+header { 
+  text-align: center; margin-bottom: 24px; 
+  background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; 
+  padding: 30px 24px; border-radius: var(--radius); 
+  box-shadow: 0 15px 35px rgba(30, 60, 114, 0.3); border: 1px solid var(--border);
+}
+header h1 { font-size: clamp(1.5rem, 3vw, 2.2rem); margin-bottom: 8px; font-weight: 900; }
+header p { font-size: clamp(0.95rem, 2vw, 1.1rem); opacity: 0.9; }
 
-  header {
-    text-align: center;
-    margin-bottom: 20px;
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-    color: #fff;
-    padding: 24px;
-    border-radius: 14px;
-    box-shadow: 0 6px 20px rgba(30,60,114,0.18);
-  }
-  header h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin-bottom: 6px; }
-  header p  { font-size: clamp(0.95rem, 2vw, 1.05rem); opacity: 0.92; }
+.current-week-badge { 
+  display: inline-flex; align-items: center; gap: 10px; 
+  background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); 
+  padding: 8px 18px; border-radius: 999px; font-size: 0.95rem; margin-top: 14px; 
+}
 
-  .section-card {
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-  }
-  .section-card.primary-border { border-color: var(--primary); }
-  .section-card h3 {
-    font-size: 1.15rem;
-    color: var(--primary-dark);
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #eaeaea;
-    padding-bottom: 8px;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+.view-tabs { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+.view-tab { 
+  padding: 12px 20px; border-radius: 14px; border: 1px solid var(--border); 
+  background: var(--surface); color: var(--muted); font-weight: 700; cursor: pointer; 
+  transition: 0.2s; backdrop-filter: blur(15px);
+}
+.view-tab:hover { border-color: var(--accent); color: #fff; }
+.view-tab.active { background: var(--primary); color: #fff; border-color: transparent; box-shadow: 0 5px 15px var(--primary-glow); }
 
-  .personal-upcoming-item {
-    background: var(--primary-light);
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
-  }
-  .personal-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .action-btn, select.action-select {
-    padding: 7px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: #fff;
-    color: var(--primary-dark);
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
-  }
-  .action-btn:hover, select.action-select:hover { background: var(--primary-light); border-color: var(--primary); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; margin-bottom: 20px; }
+.toolbar.hidden { display: none; }
+.toolbar input[type="search"] { 
+  flex: 1 1 240px; max-width: 380px; padding: 12px 16px; border-radius: 14px; 
+  border: 1px solid var(--border); background: rgba(2, 6, 23, 0.8); color: white; font-size: 1rem; outline: none; 
+}
+.toolbar button { 
+  padding: 12px 18px; border-radius: 14px; border: 1px solid var(--border); 
+  background: var(--surface); color: var(--text); font-weight: 700; cursor: pointer; 
+}
 
-  .duty-extended-menu {
-    margin-top: 14px;
-    padding: 14px;
-    background: var(--current-light);
-    border: 1px dashed var(--current);
-    border-radius: 8px;
-  }
-  .status-report-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 8px;
-    font-size: 0.88rem;
-    background: #fff;
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  .status-report-table th, .status-report-table td {
-    padding: 6px 10px;
-    border-bottom: 1px solid #eaeaea;
-    text-align: right;
-  }
-  .status-report-table th { background: #fef08a; color: #78350f; }
+.weeks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.week-btn { 
+  position: relative; background: var(--surface); border: 1px solid var(--border); 
+  border-radius: 14px; padding: 14px 8px; text-align: center; font-size: 1.05rem; 
+  font-weight: 800; color: var(--text); cursor: pointer; backdrop-filter: blur(15px); transition: 0.2s; 
+}
+.week-btn:hover { border-color: var(--accent); background: rgba(6,182,212,0.1); transform: translateY(-2px); }
+.week-btn.active { background: var(--primary); color: #fff; border-color: transparent; box-shadow: 0 5px 15px var(--primary-glow); }
+.week-btn.current { border-color: var(--warning); background: rgba(245,158,11,0.15); color: #fde68a; }
 
-  /* עיצוב צ'אט */
-  .chat-messages {
-    max-height: 300px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
-    padding: 10px;
-    background: #f8fafc;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-  }
-  .chat-msg {
-    font-size: 0.9rem;
-    padding: 8px 12px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    position: relative;
-  }
-  .chat-msg .author { font-weight: 700; color: var(--primary-dark); margin-inline-end: 6px; }
-  .chat-msg .time { font-size: 0.75rem; color: var(--muted); float: left; }
-  .chat-msg img, .chat-msg video { max-width: 100%; max-height: 200px; border-radius: 6px; margin-top: 6px; display: block; }
-  .delete-msg-btn { background: none; border: none; color: #dc2626; font-size: 0.78rem; cursor: pointer; margin-top: 4px; float: left; font-weight: 600; }
-  .chat-input-row { display: flex; gap: 8px; align-items: center; }
-  .chat-input-row input[type="text"] { flex: 1; }
-  .file-upload-label { padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: 1.1rem; }
-  .chat-input-row button.send-btn {
-    padding: 10px 20px;
-    border-radius: 10px;
-    border: none;
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-    color: #fff;
-    font-weight: 700;
-    cursor: pointer;
-  }
+.instructions { text-align: center; color: var(--muted); font-size: 1.05rem; padding: 40px 20px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); }
 
-  /* עיצוב לוח שבועות */
-  .view-tabs { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
-  .view-tab { padding: 10px 18px; border-radius: 10px; border: 2px solid var(--border); background: #fff; color: var(--primary-dark); font-weight: 600; cursor: pointer; }
-  .view-tab.active { background: var(--primary); color: #fff; border-color: var(--primary-dark); }
-  .weeks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; margin-bottom: 20px; }
-  .week-btn { background: var(--card); border: 2px solid var(--border); border-radius: 10px; padding: 12px 6px; text-align: center; font-size: 1rem; font-weight: 700; color: var(--primary); cursor: pointer; }
-  .week-btn.current { border-color: var(--current); background: var(--current-light); color: #78350f; }
-  
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
-  .modal-overlay[hidden] { display: none; }
-  .modal-content { background: #fff; border-radius: 14px; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 26px; position: relative; }
-  .modal-close { position: absolute; top: 12px; left: 12px; width: 34px; height: 34px; border-radius: 50%; border: none; background: #f0f0f0; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
-  
-  .app-page { display: none; }
-  .app-page.active { display: block; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+.modal-overlay[hidden] { display: none; }
+.modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); max-width: 540px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative; box-shadow: var(--shadow); }
+.modal-close { position: absolute; top: 16px; left: 16px; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: #fff; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+
+.category-row { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; padding: 14px 18px; background: rgba(2, 6, 23, 0.6); border-radius: 14px; border-inline-start: 4px solid var(--primary); border: 1px solid var(--border); }
+.category-row.hasb { border-inline-start-color: var(--success); }
+.category-name { font-weight: 800; min-width: 100px; color: #fff; }
+.category-content { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.empty-slot { color: var(--muted); font-style: italic; }
+
+.person-card, .category-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 26px; box-shadow: var(--shadow); margin-bottom: 16px; backdrop-filter: blur(20px); }
+.person-card h3, .category-section h3 { font-size: 1.2rem; color: #fff; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.person-card ul, .category-section ul { list-style: none; }
+.person-card li, .category-section li { padding: 12px 16px; border-radius: 12px; border-inline-start: 3px solid var(--primary); background: rgba(2, 6, 23, 0.6); border: 1px solid var(--border); margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+.row-head { display: flex; align-items: center; gap: 12px; }
+.week-badge { background: var(--primary); color: #fff; padding: 3px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 800; }
+.topic-line { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: var(--muted); padding: 6px 12px; border-inline-start: 2px solid var(--border); }
+.add-topic-btn { padding: 4px 12px; border-radius: 6px; border: 1.5px dashed var(--primary); background: transparent; color: var(--primary); cursor: pointer; font-weight: 700; }
+.edit-topic-btn { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: #fff; cursor: pointer; }
+
+.modal-footer { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.set-current-btn { padding: 10px 20px; border-radius: 12px; border: 1px solid var(--warning); background: rgba(245,158,11,0.1); color: var(--warning); font-weight: 800; cursor: pointer; }
+.current-note { padding: 10px 20px; border-radius: 12px; background: rgba(245,158,11,0.2); color: #fde68a; font-weight: 700; }
+
+.no-results { text-align: center; color: var(--muted); padding: 30px; font-style: italic; display: none; }
+.no-results.show { display: block; }
+
+/* פאנל ניהול מנהל */
+.admin-card { background: var(--surface); border: 1px solid var(--warning); border-radius: var(--radius); padding: 26px; margin-top: 30px; backdrop-filter: blur(25px); }
+.admin-card h2 { color: #fcd34d; margin-bottom: 16px; font-size: 1.3rem; }
+
+.toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(30px); opacity: 0; pointer-events: none; background: #020617; border: 1px solid var(--border); color: white; border-radius: 18px; padding: 14px 26px; z-index: 200; transition: .3s; box-shadow: 0 20px 45px rgba(0,0,0,0.8); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<!-- מסך כניסה -->
-<div id="loginScreen">
-  <div class="login-card">
-    <h1>🔐 כניסה למערכת</h1>
-    <p>הקלד את הקוד האישי שלך כדי להמשיך</p>
-    <div class="input-wrapper">
-      <input type="password" id="codeInput" placeholder="****" maxlength="10">
-      <button type="button" id="toggleEye" class="toggle-eye" title="הצג/הסתר קוד">👁️</button>
+<!-- דף כניסה מאובטח -->
+<section id="loginScreen">
+  <div class="login-shell">
+    <div class="brand-mark">✦</div>
+    <div class="login-card">
+      <h1>סינכרון</h1>
+      <p class="sub">מרכז קבוצה פלאגשיפ — כניסה מאובטחת</p>
+      <button class="google-login-btn" id="googleLoginBtn" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.17 21.31 7.27 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.19C.43 8.15 0 9.89 0 12s.43 3.85 1.19 5.39l4.08-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.27 0 3.17 2.69 1.19 6.61l4.08 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/></svg>
+        התחבר באמצעות חשבון Google
+      </button>
+      <p class="login-note">הגישה מותרת לחברי הצוות המורשים בלבד.</p>
     </div>
-    <button type="button" id="loginBtn" class="submit-btn">כניסה למערכת</button>
   </div>
-</div>
+</section>
 
-<!-- המערכת הראשית -->
-<div id="mainApp" class="container">
+<!-- האפליקציה המרכזית -->
+<main id="mainApp">
+<div class="container">
   <nav class="nav-bar">
-    <button type="button" class="nav-btn active" data-page="boardPage">📅 לוח ראשי</button>
-    <button type="button" class="nav-btn" data-page="personalPage">👤 אזור אישי</button>
-    <button type="button" class="nav-btn" data-page="chatPage">💬 צ'אט קבוצתי</button>
-    <button type="button" id="logoutBtn" class="nav-btn" style="background:#fee2e2; color:#dc2626;">🚪 התנתק</button>
+    <a href="#" class="nav-btn active">📅 לוח ראשי</a>
+    <button class="logout-nav-btn nav-btn" id="logoutBtn" style="color:#f87171">יציאה מהמערכת</button>
   </nav>
 
-  <!-- עמוד 1: לוח ראשי -->
-  <div id="boardPage" class="app-page active">
-    <header>
-      <h1>לוח שבועות מרוכז</h1>
-      <p>עיון לפי שבוע, לפי שם או לפי קטגוריה</p>
-      <div class="current-week-badge" id="currentBadge"></div>
-    </header>
-    <div class="section-card">
-      <div class="view-tabs">
-        <button type="button" class="view-tab active" data-view="week">📅 לפי שבוע</button>
-        <button type="button" class="view-tab" data-view="person">👤 לפי שם</button>
-        <button type="button" class="view-tab" data-view="category">🏷️ לפי קטגוריה</button>
-      </div>
-      <div id="view-week" class="view-panel">
-        <div class="weeks-grid" id="weeksGrid"></div>
-      </div>
-      <div id="view-person" class="view-panel" hidden><div id="personList"></div></div>
-      <div id="view-category" class="view-panel" hidden><div id="categoryList"></div></div>
-    </div>
+  <header>
+    <h1>לוח שבועות מרוכז</h1>
+    <p>עיון לפי שבוע, לפי שם או לפי קטגוריה (מסתנכרן מול ענן Firebase)</p>
+    <div class="current-week-badge" id="currentBadge">🗓️ השבוע הנוכחי: <strong id="currentWeekText">שבוע 5</strong></div>
+  </header>
+
+  <div class="view-tabs" role="tablist">
+    <button type="button" class="view-tab active" data-view="week">📅 לפי שבוע</button>
+    <button type="button" class="view-tab" data-view="person">👤 לפי שם</button>
+    <button type="button" class="view-tab" data-view="category">🏷️ לפי קטגוריה</button>
   </div>
 
-  <!-- עמוד 2: אזור אישי -->
-  <div id="personalPage" class="app-page">
-    <div class="section-card primary-border">
-      <h3><span>👤 אזור אישי ותורנות</span></h3>
-      <div id="personalContent">טוענת נתונים...</div>
-      <div class="personal-actions">
-        <button type="button" class="action-btn" id="changeCodeBtn">🔐 שינוי קוד</button>
-        <select id="dutySelector" class="action-select"><option value="">⭐ בחר חניך תורן...</option></select>
-        <button type="button" class="action-btn" id="notifBtn" style="background:#f0fdf4; color:#166534;">🔔 הפעל התראות</button>
-        <select id="notifPrefSelect" class="action-select">
-          <option value="all">התראות מכל הודעה</option>
-          <option value="duty">התראות מחניך תורן בלבד</option>
-        </select>
-      </div>
-      <div id="dutyMenuContainer"></div>
-    </div>
+  <div class="toolbar hidden" id="toolbar">
+    <input type="search" id="search" placeholder="חיפוש לפי שם או נושא...">
+    <button type="button" id="clearBtn">נקה</button>
   </div>
 
-  <!-- עמוד 3: צ'אט -->
-  <div id="chatPage" class="app-page">
-    <div class="section-card">
-      <h3>💬 צ'אט קבוצתי ותקשורת</h3>
-      <div class="chat-messages" id="chatMessagesBox">טוען הודעות...</div>
-      <div class="chat-input-row">
-        <label for="chatFileInput" class="file-upload-label" title="צרף מדיה">📎</label>
-        <input type="file" id="chatFileInput" accept="image/*,video/*" style="display:none">
-        <input type="text" id="chatInput" placeholder="כתוב הודעה...">
-        <button type="button" class="send-btn" id="chatSendBtn">שלח</button>
+  <!-- תצוגה 1: לפי שבוע -->
+  <div id="view-week" class="view-panel">
+    <div class="weeks-grid" id="weeksGrid"></div>
+    <div id="instructions" class="instructions">👆 בחר שבוע מהרשימה למעלה כדי להציג את הפעילויות.</div>
+  </div>
+
+  <!-- תצוגה 2: לפי שם -->
+  <div id="view-person" class="view-panel hidden">
+    <div id="personContent"></div>
+  </div>
+
+  <!-- תצוגה 3: לפי קטגוריה -->
+  <div id="view-category" class="view-panel hidden">
+    <div id="categoryContent"></div>
+  </div>
+
+  <div class="no-results" id="noResults">לא נמצאו תוצאות מתאימות לחיפוש.</div>
+
+  <!-- פאנל מנהל מוסתר אוטומטית למי שאינו מורשה -->
+  <div id="adminPanelSection" class="admin-card hidden">
+    <h2>🛡️ פאנל ניהול ראשי (מנהל בלבד)</h2>
+    <div style="display:grid;gap:12px">
+      <div>
+        <label style="display:block;font-size:13px;margin-bottom:4px;color:var(--muted)">הגדרת השבוע הנוכחי במערכת</label>
+        <select id="adminSetWeekSelect" class="select" style="width:100%;height:46px;background:rgba(2,6,23,0.8);border:1px solid var(--border);border-radius:12px;color:#fff;padding:0 12px"></select>
       </div>
+      <button type="button" id="adminSaveWeekBtn" class="google-login-btn" style="background:var(--warning);color:#111827;height:46px;font-size:14px;box-shadow:none">עדכן שבוע נוכחי בענן</button>
     </div>
   </div>
 </div>
+</main>
 
-<!-- מודל שבוע -->
-<div class="modal-overlay" id="weekModal" hidden>
+<!-- מודל פרטי שבוע -->
+<div class="modal-overlay hidden" id="weekModal">
   <div class="modal-content">
     <button type="button" class="modal-close" id="modalClose">✕</button>
     <div id="modalBody"></div>
   </div>
 </div>
 
+<div id="toast" class="toast"></div>
+
 <script>
-(function () {
-  'use strict';
+window.addEventListener('DOMContentLoaded', () => {
+'use strict';
 
-  // ==========================================
-  // בלוק 1: הגדרות בסיס ונתוני מערכת
-  // ==========================================
-  const firebaseConfig = {
-    apiKey: "AIzaSyB_AerhoBm-VJPqf25kOH1S4xGdauV2EDI",
-    authDomain: "group-hub-2026.firebaseapp.com",
-    projectId: "group-hub-2026",
-    storageBucket: "group-hub-2026.firebasestorage.app",
-    messagingSenderId: "816870308307",
-    appId: "1:816870308307:web:c3252cbb51f4f075d49726",
-    measurementId: "G-KMJ1H172PN"
-  };
+const SUPER_ADMIN_EMAIL = "a0583211042@gmail.com";
+const INITIAL_EMAILS = [
+  "a0556701109@gmail.com",
+  "a0583211042@gmail.com",
+  "a0548505450@gmail.com",
+  "f8547974@gmail.com",
+  "a0555572624@gmail.com",
+  "p0548477616@gmail.com",
+  "gmail.com@8503887",
+  "sr0546172709@gmail.com"
+];
 
+const firebaseConfig = {
+  apiKey: "AIzaSyB_AerhoBm-VJPqf25kOH1S4xGdauV2EDI",
+  authDomain: "group-hub-2026.firebaseapp.com",
+  projectId: "group-hub-2026",
+  storageBucket: "group-hub-2026.firebasestorage.app",
+  messagingSenderId: "816870308307",
+  appId: "1:816870308307:web:c3252cbb51f4f075d49726",
+  measurementId: "G-KMJ1H172PN"
+};
+
+if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+}
+const db = firebase.firestore();
+const auth = firebase.auth();
 
-  const PEOPLE = {
-    aharonShemesh:    'אהרן שמש',
-    aharonPotesh:     'אהרן פוטש',
-    yaakovPotesh:     'יעקב פוטש',
-    ephraimResh:      'אפרים גוטליב (ר)',
-    ephraimBet:       'אפרים גוטליב (ב)',
-    yehudaKaufman:    'יהודה קויפמן',
-    avrahamGutstein:  'אברהם גוטשטיין',
-    asherPisrbavsky:  'אשר פיסרבסקי'
-  };
+const PEOPLE = {
+  aharonShemesh:    'אהרן שמש',
+  aharonPotesh:     'אהרן פוטש',
+  yaakovPotesh:     'יעקב פוטש',
+  ephraimResh:      'אפרים גוטליב (ר)',
+  ephraimBet:       'אפרים גוטליב (ב)',
+  yehudaKaufman:    'יהודה קויפמן',
+  avrahamGutstein:  'אברהם גוטשטיין',
+  asherPisrbavsky:  'אשר פיסרבסקי'
+};
 
-  const RANDOM_MESSAGES = [
-    "\"החכמה היא לא לדעת מה להגיד, אלא מתי להגיד.\" 💡",
-    "\"עבודת צוות היא הכוח, כוחו של הכלל גדול מכוחו של הפרט.\" 🤝",
-    "\"כל התקדמות קטנה מקרבת אותך ליעד הגדול.\" 🚀",
-    "\"התמדה היא המפתח להצלחה בכל משימה.\" ⭐",
-    "\"שבוע מוצלח מתחיל בתיאום טוב ובראש צלול.\" 🎯"
-  ];
+const WEEK_DATA = {
+  2:  { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'גיוס לצה"ל ושליחות' } },
+  3:  { added: 'aharonPotesh',    sachi: 'asherPisrbavsky',        hasb: null },
+  4:  { added: 'yaakovPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'חגי תשרי' } },
+  5:  { added: 'ephraimResh',     sachi: 'yaakovPotesh',           hasb: null },
+  6:  { added: 'yehudaKaufman',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'ידיעת הארץ' } },
+  7:  { added: 'ephraimBet',      sachi: 'ephraimBet',             hasb: null },
+  8:  { added: 'avrahamGutstein', sachi: null,                     hasb: { trainee: 'ephraimBet',     topic: 'רצח רבין' } },
+  9:  { added: 'asherPisrbavsky', sachi: 'aharonShemesh',          hasb: null },
+  10: { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'ציונות' } },
+  11: { added: 'yaakovPotesh',    sachi: 'yaakovPotesh',           hasb: null },
+  12: { added: 'aharonPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'ירושלים' } },
+  13: { added: 'ephraimResh',     sachi: 'aharonPotesh',           hasb: null },
+  14: { added: 'ephraimBet',      sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'זהות וחברה ישראלית' } },
+  15: { added: 'yehudaKaufman',   sachi: 'yehudaKaufman',          hasb: null },
+  16: { added: 'avrahamGutstein', sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'איכות הסביבה' } },
+  17: { added: 'asherPisrbavsky', sachi: 'yaakovPotesh',           hasb: null },
+  18: { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'yehudaKaufman',  topic: 'גזענות וסטיגמות' } },
+  19: { added: 'yaakovPotesh',    sachi: 'aharonPotesh',           hasb: null },
+  20: { added: 'aharonPotesh',    sachi: null,                     hasb: { trainee: 'ephraimBet',     topic: 'המהפכה התעשייתית' } },
+  21: { added: 'ephraimResh',     sachi: 'avrahamGutstein',        hasb: null },
+  22: { added: 'ephraimBet',      sachi: null,                     hasb: { trainee: 'aharonPotesh',   topic: 'מבצע אנטבה' } },
+  23: { added: 'avrahamGutstein', sachi: 'aharonShemesh',          hasb: null },
+  24: { added: 'yehudaKaufman',   sachi: null,                     hasb: { trainee: 'avrahamGutstein',topic: 'עבודת צוות וכוחה של קבוצה' } },
+  25: { added: 'asherPisrbavsky', sachi: 'ephraimBet',             hasb: null },
+  26: { added: 'yaakovPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'ש"י עגנון' } },
+  27: { added: 'aharonShemesh',   sachi: 'avrahamGutstein',        hasb: null },
+  28: { added: null,              sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'מלחמת ששת הימים' } },
+  29: { added: null,              sachi: 'ephraimResh',            hasb: null },
+  30: { added: null,              sachi: null,                     hasb: { trainee: 'yehudaKaufman',  topic: 'מבצע קדש' } }
+};
 
-  const WEEK_DATA = {
-    2:  { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'גיוס לצה"ל ושליחות' } },
-    3:  { added: 'aharonPotesh',    sachi: 'asherPisrbavsky',        hasb: null },
-    4:  { added: 'yaakovPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'חגי תשרי' } },
-    5:  { added: 'ephraimResh',     sachi: 'yaakovPotesh',           hasb: null },
-    6:  { added: 'yehudaKaufman',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'ידיעת הארץ' } },
-    7:  { added: 'ephraimBet',      sachi: 'ephraimBet',             hasb: null },
-    8:  { added: 'avrahamGutstein', sachi: null,                     hasb: { trainee: 'ephraimBet',     topic: 'רצח רבין' } },
-    9:  { added: 'asherPisrbavsky', sachi: 'aharonShemesh',          hasb: null },
-    10: { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'ציונות' } },
-    11: { added: 'yaakovPotesh',    sachi: 'yaakovPotesh',           hasb: null },
-    12: { added: 'aharonPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'ירושלים' } },
-    13: { added: 'ephraimResh',     sachi: 'aharonPotesh',           hasb: null },
-    14: { added: 'ephraimBet',      sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'זהות וחברה ישראלית' } },
-    15: { added: 'yehudaKaufman',   sachi: 'yehudaKaufman',          hasb: null },
-    16: { added: 'avrahamGutstein', sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'איכות הסביבה' } },
-    17: { added: 'asherPisrbavsky', sachi: 'yaakovPotesh',           hasb: null },
-    18: { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'yehudaKaufman',  topic: 'גזענות וסטיגמות' } },
-    19: { added: 'yaakovPotesh',    sachi: 'aharonPotesh',           hasb: null },
-    20: { added: 'aharonPotesh',    sachi: null,                     hasb: { trainee: 'ephraimBet',     topic: 'המהפכה התעשייתית' } },
-    21: { added: 'ephraimResh',     sachi: 'avrahamGutstein',        hasb: null },
-    22: { added: 'ephraimBet',      sachi: null,                     hasb: { trainee: 'aharonPotesh',   topic: 'מבצע אנטבה' } },
-    23: { added: 'avrahamGutstein', sachi: 'aharonShemesh',          hasb: null },
-    24: { added: 'yehudaKaufman',   sachi: null,                     hasb: { trainee: 'avrahamGutstein',topic: 'עבודת צוות וכוחה של קבוצה' } },
-    25: { added: 'asherPisrbavsky', sachi: 'ephraimBet',             hasb: null },
-    26: { added: 'yaakovPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'ש"י עגנון' } },
-    27: { added: 'aharonShemesh',   sachi: 'avrahamGutstein',        hasb: null },
-    28: { added: null,              sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'מלחמת ששת הימים' } },
-    29: { added: null,              sachi: 'ephraimResh',            hasb: null },
-    30: { added: null,              sachi: null,                     hasb: { trainee: 'yehudaKaufman',  topic: 'מבצע קדש' } }
-  };
+const ALL_WEEKS = Object.keys(WEEK_DATA).map(Number).sort((a, b) => a - b);
+const nameOf = (key) => (key == null || key === '') ? null : (PEOPLE[key] || key);
 
-  const CAT_NAMES = { added: 'ערך מוסף', sachi: 'סח"י', hasb: 'הסב"ש' };
-  const ALL_WEEKS = Object.keys(WEEK_DATA).map(Number).sort((a, b) => a - b);
-  const nameOf = (key) => (key == null || key === '') ? null : (PEOPLE[key] || key);
+let whitelistEmails = [...INITIAL_EMAILS];
+let adminEmails = [SUPER_ADMIN_EMAIL, "0583211042@gmail.com"];
+let cloudTopics = {};
+let currentActiveWeek = 5;
+let currentEmail = localStorage.getItem('loggedEmail') || "";
+let currentUser = localStorage.getItem('loggedUser') || "";
 
-  let currentUser = localStorage.getItem('loggedUser');
-  let currentDuty = "";
-  let memberStatuses = {};
-  let cloudTopics = {};
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
 
+db.collection("groupData").doc("securityConfig").onSnapshot(async (doc) => {
+  if (doc.exists) {
+    const data = doc.data();
+    if (data.whitelist) whitelistEmails = data.whitelist;
+    if (data.admins) adminEmails = data.admins;
+  }
+  checkAdminAccessPrivileges();
+});
 
-  // ==========================================
-  // בלוק 2: מנגנון כניסה, התנתקות וניווט
-  // ==========================================
-  document.querySelectorAll('.nav-btn[data-page]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.nav-btn[data-page]').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.app-page').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById(btn.dataset.page).classList.add('active');
-    });
+db.collection("groupData").doc("metaMeta").onSnapshot((doc) => {
+  if (doc.exists && doc.data().currentWeek) {
+    currentActiveWeek = doc.data().currentWeek;
+  }
+  renderUI();
+});
+
+db.collection("groupData").doc("customTopics").onSnapshot((doc) => {
+  cloudTopics = doc.data() || {};
+  renderUI();
+});
+
+const googleLoginBtn = document.getElementById('googleLoginBtn');
+if (googleLoginBtn) {
+  googleLoginBtn.addEventListener('click', async () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      await auth.signInWithPopup(provider);
+    } catch (e) {
+      try { await auth.signInWithRedirect(provider); } catch (err) { alert("שגיאה בהתחברות: " + err.message); }
+    }
   });
+}
 
-  document.getElementById('logoutBtn').addEventListener('click', () => {
+auth.onAuthStateChanged((user) => {
+  if (user) verifyUserAccess(user);
+  else if (currentUser && currentEmail) startApp();
+});
+
+function verifyUserAccess(user) {
+  const email = (user.email || "").toLowerCase().trim();
+  const name = user.displayName || email;
+  const isSuper = (email === SUPER_ADMIN_EMAIL.toLowerCase() || email === "0583211042@gmail.com");
+  const isWhitelisted = isSuper || whitelistEmails.map(e => e.toLowerCase().trim()).includes(email);
+
+  if (!isWhitelisted) {
+    auth.signOut();
+    alert("הגישה נדחתה: כתובת האימייל (" + email + ") אינה מורשית להיכנס למערכת זו.");
+    return;
+  }
+
+  currentUser = name;
+  currentEmail = email;
+  localStorage.setItem('loggedUser', currentUser);
+  localStorage.setItem('loggedEmail', currentEmail);
+  startApp();
+}
+
+function startApp() {
+  const loginScreen = document.getElementById('loginScreen');
+  const mainApp = document.getElementById('mainApp');
+  if (loginScreen) loginScreen.style.display = 'none';
+  if (mainApp) mainApp.style.display = 'block';
+
+  checkAdminAccessPrivileges();
+  renderUI();
+}
+
+function checkAdminAccessPrivileges() {
+  const email = (currentEmail || "").toLowerCase().trim();
+  const isSuper = (email === SUPER_ADMIN_EMAIL.toLowerCase() || email === "0583211042@gmail.com");
+  const isAdmin = isSuper || adminEmails.map(e => e.toLowerCase().trim()).includes(email);
+
+  const adminSection = document.getElementById('adminPanelSection');
+  if (isAdmin) {
+    if (adminSection) adminSection.classList.remove('hidden');
+    populateAdminWeeks();
+  } else {
+    if (adminSection) adminSection.classList.add('hidden');
+  }
+}
+
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    try { await auth.signOut(); } catch(e){}
     localStorage.clear();
     location.reload();
   });
+}
 
-  const codeInput = document.getElementById('codeInput');
-  const toggleEye = document.getElementById('toggleEye');
-  toggleEye.addEventListener('click', () => {
-    if (codeInput.type === 'password') {
-      codeInput.type = 'text';
-      toggleEye.textContent = '🙈';
-    } else {
-      codeInput.type = 'password';
-      toggleEye.textContent = '👁️';
-    }
+function populateAdminWeeks() {
+  const sel = document.getElementById('adminSetWeekSelect');
+  if (!sel) return;
+  sel.innerHTML = ALL_WEEKS.map(w => `<option value="${w}" ${w === currentActiveWeek ? 'selected' : ''}>שבוע ${w}</option>`).join('');
+}
+
+const adminSaveWeekBtn = document.getElementById('adminSaveWeekBtn');
+if (adminSaveWeekBtn) {
+  adminSaveWeekBtn.addEventListener('click', async () => {
+    const val = Number(document.getElementById('adminSetWeekSelect').value);
+    await db.collection("groupData").doc("metaMeta").set({ currentWeek: val }, { merge: true });
+    showToast("השבוע הנוכחי עודכן בהצלחה בענן!");
+  });
+}
+
+function renderUI() {
+  const currentWeekText = document.getElementById('currentWeekText');
+  if (currentWeekText) currentWeekText.textContent = 'שבוע ' + currentActiveWeek;
+
+  renderWeeksGrid();
+  renderPersonView();
+  renderCategoryView();
+}
+
+function renderWeeksGrid() {
+  const grid = document.getElementById('weeksGrid');
+  if (!grid) return;
+  grid.innerHTML = ALL_WEEKS.map(w => {
+    const isCur = w === currentActiveWeek;
+    return `<button type="button" class="week-btn ${isCur ? 'current' : ''}" onclick="openWeekModal(${w})">שבוע ${w}</button>`;
+  }).join('');
+}
+
+window.openWeekModal = function(w) {
+  const d = WEEK_DATA[w] || {};
+  const top = cloudTopics[w] || (d.hasb ? d.hasb.topic : '');
+  
+  let html = `
+    <h2 style="font-size:1.4rem;margin-bottom:18px;color:#fff">שבוע ${w} ${w === currentActiveWeek ? '(נוכחי)' : ''}</h2>
+    <div class="category-row">
+      <div class="category-name">ערך מוסף</div>
+      <div class="category-content"><strong>${nameOf(d.added) || '<span class="empty-slot">אין</span>'}</strong></div>
+    </div>
+    <div class="category-row">
+      <div class="category-name">סח"י</div>
+      <div class="category-content"><strong>${nameOf(d.sachi) || '<span class="empty-slot">אין</span>'}</strong></div>
+    </div>
+    <div class="category-row hasb">
+      <div class="category-name">הסב"ש</div>
+      <div class="category-content">
+        <strong>${d.hasb ? nameOf(d.hasb.trainee) : '<span class="empty-slot">אין</span>'}</strong>
+        <div class="topic-line">
+          <span>נושא: ${top || '<span class="empty-slot">טרם הוגדר</span>'}</span>
+          <button type="button" class="edit-topic-btn" onclick="editTopic(${w})" title="ערוך נושא">✎</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('weekModal').classList.remove('hidden');
+};
+
+const modalClose = document.getElementById('modalClose');
+if (modalClose) {
+  modalClose.addEventListener('click', () => {
+    document.getElementById('weekModal').classList.add('hidden');
+  });
+}
+
+window.editTopic = async function(w) {
+  const d = WEEK_DATA[w] || {};
+  const curr = cloudTopics[w] || (d.hasb ? d.hasb.topic : '');
+  const val = prompt("הכנס נושא חדש לשבוע " + w + ":", curr);
+  if (val !== null) {
+    cloudTopics[w] = val.trim();
+    await db.collection("groupData").doc("customTopics").set(cloudTopics);
+    showToast("הנושא עודכן בהצלחה בענן!");
+    openWeekModal(w);
+  }
+};
+
+function renderPersonView() {
+  const container = document.getElementById('personContent');
+  if (!container) return;
+  
+  let byP = {};
+  Object.values(PEOPLE).forEach(n => byP[n] = []);
+  
+  ALL_WEEKS.forEach(w => {
+    const d = WEEK_DATA[w];
+    if (d.added && PEOPLE[d.added]) byP[PEOPLE[d.added]].push({ w, type: 'ערך מוסף' });
+    if (d.sachi && PEOPLE[d.sachi]) byP[PEOPLE[d.sachi]].push({ w, type: 'סח"י' });
+    if (d.hasb && PEOPLE[d.hasb.trainee]) byP[PEOPLE[d.hasb.trainee]].push({ w, type: 'הסב"ש', topic: cloudTopics[w] || d.hasb.topic });
   });
 
-  document.getElementById('loginBtn').addEventListener('click', handleLogin);
-  codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); });
-
-  async function handleLogin() {
-    const code = codeInput.value.trim();
-    if (!code) { alert("נא להקליד קוד"); return; }
-    try {
-      let docRef = db.collection("groupData").doc("קודי הגדרות");
-      let docSnap = await docRef.get();
-      if (!docSnap.exists) {
-        docRef = db.collection("groupData").doc("configCodes");
-        docSnap = await docRef.get();
-      }
-      if (docSnap.exists) {
-        const codesMap = docSnap.data();
-        if (codesMap[code]) {
-          currentUser = codesMap[code];
-          localStorage.setItem('loggedUser', currentUser);
-          checkAuthAndStartApp();
-        } else {
-          alert("קוד שגוי!");
-        }
-      } else {
-        alert("מסמך הקודים אינו נמצא בענן.");
-      }
-    } catch (e) {
-      alert("שגיאת התחברות.");
-    }
+  let html = '';
+  for (let [name, tasks] of Object.entries(byP)) {
+    html += `
+      <div class="person-card">
+        <h3>👤 ${name}</h3>
+        <ul>
+          ${tasks.length ? tasks.map(t => `
+            <li>
+              <div class="row-head">
+                <span class="week-badge">שבוע ${t.w}</span>
+                <strong>${t.type}</strong>
+              </div>
+              ${t.topic ? `<div class="topic-line">נושא: ${t.topic}</div>` : ''}
+            </li>
+          `).join('') : '<li class="empty-slot">אין משימות רשומות</li>'}
+        </ul>
+      </div>
+    `;
   }
+  container.innerHTML = html;
+}
 
-  if (currentUser) {
-    checkAuthAndStartApp();
-  }
+function renderCategoryView() {
+  const container = document.getElementById('categoryContent');
+  if (!container) return;
 
-  function checkAuthAndStartApp() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
+  let addedList = [];
+  let sachiList = [];
+  let hasbList = [];
+
+  ALL_WEEKS.forEach(w => {
+    const d = WEEK_DATA[w];
+    if (d.added && PEOPLE[d.added]) addedList.push({ w, name: PEOPLE[d.added] });
+    if (d.sachi && PEOPLE[d.sachi]) sachiList.push({ w, name: PEOPLE[d.sachi] });
+    if (d.hasb && PEOPLE[d.hasb.trainee]) hasbList.push({ w, name: PEOPLE[d.hasb.trainee], topic: cloudTopics[w] || d.hasb.topic });
+  });
+
+  container.innerHTML = `
+    <div class="category-section">
+      <h3>🏷️ ערך מוסף</h3>
+      <ul>
+        ${addedList.map(item => `<li><div class="row-head"><span class="week-badge">שבוע ${item.w}</span><strong>${item.name}</strong></div></li>`).join('')}
+      </ul>
+    </div>
+    <div class="category-section">
+      <h3>🏷️ סח"י</h3>
+      <ul>
+        ${sachiList.map(item => `<li><div class="row-head"><span class="week-badge">שבוע ${item.w}</span><strong>${item.name}</strong></div></li>`).join('')}
+      </ul>
+    </div>
+    <div class="category-section">
+      <h3>🏷️ הסב"ש</h3>
+      <ul>
+        ${hasbList.map(item => `<li><div class="row-head"><span class="week-badge">שבוע ${item.w}</span><strong>${item.name}</strong></div><div class="topic-line">נושא: ${item.topic || 'טרם הוגדר'}</div></li>`).join('')}
+      </ul>
+    </div>
+  `;
+}
+
+// ניהול טאבים
+document.querySelectorAll('.view-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.add('hidden'));
     
-    db.collection("groupData").doc("customTopics").onSnapshot((doc) => {
-      cloudTopics = doc.data() || {};
-      refreshBoard();
-    });
-
-    db.collection("groupData").doc("metaMeta").onSnapshot((doc) => {
-      if (doc.exists) {
-        const data = doc.data();
-        currentDuty = data.currentDuty || "";
-        memberStatuses = data.memberStatuses || {};
-        const sel = document.getElementById('dutySelector');
-        if (sel) sel.value = currentDuty;
-      }
-      renderPersonalDashboard();
-    });
-
-    db.collection("groupData").doc("chatRoom").onSnapshot((doc) => {
-      const messages = (doc.exists && doc.data().messages) ? doc.data().messages : [];
-      renderChatMessages(messages);
-    });
-
-    refreshBoard();
-    renderPersonalDashboard();
-  }
-
-
-  // ==========================================
-  // בלוק 3: לוח השבועות המרכזי
-  // ==========================================
-  function calculateWeek() {
-    const anchor = { sundayISO: '2026-09-13', week: 5 };
-    try { const r = localStorage.getItem('currentAnchor.v1'); if (r) Object.assign(anchor, JSON.parse(r)); } catch {}
-    const ref = new Date(anchor.sundayISO + 'T00:00:00');
-    const now = new Date(); now.setHours(0,0,0,0);
-    const sun = new Date(now); sun.setDate(now.getDate() - now.getDay());
-    let w = anchor.week + Math.round((sun - ref) / 86400000 / 7);
-    if (w < ALL_WEEKS[0]) w = ALL_WEEKS[0];
-    if (w > ALL_WEEKS[ALL_WEEKS.length-1]) w = ALL_WEEKS[ALL_WEEKS.length-1];
-    return w;
-  }
-
-  const CUR_WEEK = calculateWeek();
-
-  function refreshBoard() {
-    document.getElementById('currentBadge').innerHTML = '🗓️ שבוע נוכחי: <strong>שבוע ' + CUR_WEEK + '</strong>';
-    const grid = document.getElementById('weeksGrid');
-    grid.innerHTML = ALL_WEEKS.map(w => '<button class="week-btn '+(w===CUR_WEEK?'current':'')+'" onclick="openModal('+w+')">שבוע '+w+'</button>').join('');
-    renderViews();
-  }
-
-  window.openModal = function(week) {
-    const d = WEEK_DATA[week];
-    document.getElementById('modalBody').innerHTML = '<h2>שבוע '+week+'</h2>' +
-      '<div class="section-card" style="margin-top:10px;"><b>ערך מוסף:</b> '+(nameOf(d.added)||'אין')+'</div>' +
-      '<div class="section-card"><b>סח"י:</b> '+(nameOf(d.sachi)||'אין')+'</div>' +
-      '<div class="section-card"><b>הסב"ש:</b> '+(d.hasb?nameOf(d.hasb.trainee):'אין')+'</div>';
-    document.getElementById('weekModal').hidden = false;
-  };
-  document.getElementById('modalClose').addEventListener('click', () => document.getElementById('weekModal').hidden = true);
-
-  function renderViews() {
-    let byP = new Map();
-    ALL_WEEKS.forEach(w => {
-      const d = WEEK_DATA[w];
-      ['added', 'sachi'].forEach(cat => {
-        if (d[cat]) {
-          let n = nameOf(d[cat]);
-          if (!byP.has(n)) byP.set(n, []);
-          byP.get(n).push('שבוע '+w+' ('+CAT_NAMES[cat]+')');
-        }
-      });
-    });
-    let pHtml = '';
-    byP.forEach((arr, name) => {
-      pHtml += '<div class="section-card"><h3>👤 '+name+'</h3><ul>'+arr.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
-    });
-    document.getElementById('personList').innerHTML = pHtml;
-  }
-
-  document.querySelectorAll('.view-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const v = tab.dataset.view;
-      document.getElementById('view-week').hidden = v !== 'week';
-      document.getElementById('view-person').hidden = v !== 'person';
-      document.getElementById('view-category').hidden = v !== 'category';
-    });
+    btn.classList.add('active');
+    const view = btn.dataset.view;
+    document.getElementById('view-' + view).classList.remove('hidden');
+    
+    const toolbar = document.getElementById('toolbar');
+    if (view === 'week') toolbar.classList.add('hidden');
+    else toolbar.classList.remove('hidden');
   });
+});
 
-
-  // ==========================================
-  // בלוק 4: אזור אישי ותורנות
-  // ==========================================
-  const dutySelector = document.getElementById('dutySelector');
-  Object.values(PEOPLE).forEach(name => {
-    const opt = document.createElement('option');
-    opt.value = name;
-    opt.textContent = name;
-    dutySelector.appendChild(opt);
-  });
-
-  dutySelector.addEventListener('change', async (e) => {
-    if (!e.target.value) return;
-    await db.collection("groupData").doc("metaMeta").set({ currentDuty: e.target.value }, { merge: true });
-    alert("החניך התורן עודכן בהצלחה!");
-  });
-
-  window.updateMyStatus = async function(statusText) {
-    memberStatuses[currentUser] = { text: statusText, time: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) };
-    await db.collection("groupData").doc("metaMeta").set({ memberStatuses: memberStatuses }, { merge: true });
-    alert("הסטטוס עודכן!");
-  };
-
-  window.sendDutyBroadcast = async function() {
-    const text = "📢 קריאה מחניך התורן (" + currentUser + "): נא לעדכן בהקדם את הסטטוס!";
-    const chatRef = db.collection("groupData").doc("chatRoom");
-    const doc = await chatRef.get();
-    let messages = (doc.exists && doc.data().messages) ? doc.data().messages : [];
-    messages.push({ id: 'msg_' + Date.now(), author: currentUser + " (תורן)", text, time: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) });
-    await chatRef.set({ messages });
-    alert("התראה נשלחה!");
-  };
-
-  document.getElementById('notifBtn').addEventListener('click', () => {
-    Notification.requestPermission().then(p => alert(p === 'granted' ? "התראות הופעלו!" : "התראות נדחו."));
-  });
-
-  const notifPrefSelect = document.getElementById('notifPrefSelect');
-  notifPrefSelect.value = localStorage.getItem('notifPref') || 'all';
-  notifPrefSelect.addEventListener('change', (e) => {
-    localStorage.setItem('notifPref', e.target.value);
-    alert("העדפת התראות עודכנה!");
-  });
-
-  document.getElementById('changeCodeBtn').addEventListener('click', async () => {
-    let newCode = prompt("הכנס קוד אישי חדש:");
-    if (!newCode || newCode.trim().length < 2) return;
-    let docRef = db.collection("groupData").doc("קודי הגדרות");
-    let docSnap = await docRef.get();
-    let codes = docSnap.exists ? docSnap.data() : {};
-    for (let k in codes) { if (codes[k] === currentUser) delete codes[k]; }
-    codes[newCode.trim()] = currentUser;
-    await docRef.set(codes);
-    alert("הקוד עודכן בהצלחה!");
-  });
-
-  function renderPersonalDashboard() {
-    const el = document.getElementById('personalContent');
-    const dutyContainer = document.getElementById('dutyMenuContainer');
-    if (!el) return;
-    let motto = RANDOM_MESSAGES[(CUR_WEEK + currentUser.length) % RANDOM_MESSAGES.length];
-    let html = '<div style="font-weight:600; color:var(--primary-dark);">שלום, '+currentUser+'! 👋</div>' +
-      '<div style="font-style:italic; font-size:0.88rem; color:#555; margin-bottom:8px;">⭐ משפט השבוע: '+motto+'</div>' +
-      '<div style="font-size:0.88rem; color:#444; margin-bottom:6px;">⭐ חניך תורן: <strong>'+(currentDuty||'טרם נבחר')+'</strong></div>' +
-      '<div style="margin-top:10px; border-top:1px solid #eaeaea; paddingTop:8px;">' +
-      '<div style="font-size:0.85rem; font-weight:600; margin-bottom:4px;">דיווח סטטוס:</div>' +
-      '<button class="action-btn" onclick="updateMyStatus(\'🏠 הגעתי הביתה\')">🏠 הגעתי הביתה</button> ' +
-      '<button class="action-btn" onclick="updateMyStatus(\'🚌 בדרך\')">🚌 בדרך</button> ' +
-      '<button class="action-btn" onclick="updateMyStatus(\'🏛️ בבסיס\')">🏛️ בבסיס</button></div>';
-    el.innerHTML = html;
-
-    if (currentDuty && currentUser === currentDuty) {
-      let rows = Object.values(PEOPLE).map(n => '<tr><td>'+n+'</td><td>'+(memberStatuses[n]?.text||'טרם דיווח')+'</td></tr>').join('');
-      dutyContainer.innerHTML = '<div class="duty-extended-menu"><h4>⭐ תפריט חניך תורן</h4>' +
-        '<button class="action-btn" style="background:var(--current); color:#fff; margin-bottom:8px;" onclick="sendDutyBroadcast()">📢 שלח התראה לכולם</button>' +
-        '<table class="status-report-table"><tr><th>שם</th><th>סטטוס</th></tr>'+rows+'</table></div>';
-    } else {
-      dutyContainer.innerHTML = '';
-    }
-  }
-
-
-  // ==========================================
-  // בלוק 5: צ'אט קבוצתי ומדיה
-  // ==========================================
-  document.getElementById('chatSendBtn').addEventListener('click', sendChat);
-  document.getElementById('chatInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
-
-  async function sendChat() {
-    const input = document.getElementById('chatInput');
-    const fileInput = document.getElementById('chatFileInput');
-    const text = input.value.trim();
-    const file = fileInput.files[0];
-    if (!text && !file) return;
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        await pushMsg(text, e.target.result, file.type.startsWith('video') ? 'video' : 'image');
-      };
-      reader.readAsDataURL(file);
-    } else {
-      await pushMsg(text, null, null);
-    }
-  }
-
-  async function pushMsg(text, mediaUrl, mediaType) {
-    const chatRef = db.collection("groupData").doc("chatRoom");
-    const doc = await chatRef.get();
-    let messages = (doc.exists && doc.data().messages) ? doc.data().messages : [];
-    messages.push({
-      id: 'msg_' + Date.now(),
-      author: currentUser,
-      text, mediaUrl, mediaType,
-      time: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
+const searchInput = document.getElementById('search');
+if (searchInput) {
+  searchInput.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    // סינון פשוט לתוצאות
+    const activePanel = document.querySelector('.view-panel:not(.hidden)');
+    const items = activePanel.querySelectorAll('li, .person-card');
+    let found = false;
+    items.forEach(el => {
+      const match = el.textContent.toLowerCase().includes(q);
+      el.style.display = match ? '' : 'none';
+      if (match) found = true;
     });
-    if (messages.length > 50) messages = messages.slice(messages.length - 50);
-    await chatRef.set({ messages });
-    document.getElementById('chatInput').value = "";
-    document.getElementById('chatFileInput').value = "";
-  }
+    const noRes = document.getElementById('noResults');
+    if (noRes) noRes.classList.toggle('show', !found && q !== '');
+  });
+}
 
-  window.deleteMsg = async function(id) {
-    if (!confirm("למחוק הודעה?")) return;
-    const chatRef = db.collection("groupData").doc("chatRoom");
-    const doc = await chatRef.get();
-    if (doc.exists) {
-      let messages = (doc.data().messages || []).filter(m => m.id !== id);
-      await chatRef.set({ messages });
-    }
-  };
+const clearBtn = document.getElementById('clearBtn');
+if (clearBtn) {
+  clearBtn.addEventListener('click', () => {
+    if (searchInput) searchInput.value = '';
+    document.querySelectorAll('li, .person-card').forEach(el => el.style.display = '');
+    document.getElementById('noResults').classList.remove('show');
+  });
+}
 
-  function renderChatMessages(messages) {
-    const box = document.getElementById('chatMessagesBox');
-    if (!messages.length) { box.innerHTML = '<div style="color:var(--muted); text-align:center;">אין הודעות עדיין.</div>'; return; }
-    box.innerHTML = messages.map(m => {
-      let media = '';
-      if (m.mediaUrl) {
-        media = m.mediaType === 'video' ? '<video controls src="'+m.mediaUrl+'"></video>' : '<img src="'+m.mediaUrl+'">';
-      }
-      let del = (m.author === currentUser || m.author.includes(currentUser)) ? '<button class="delete-msg-btn" onclick="deleteMsg(\''+m.id+'\')">מחק</button>' : '';
-      return '<div class="chat-msg"><span class="time">'+m.time+'</span><span class="author">'+m.author+':</span><span>'+(m.text||'')+'</span>'+media+del+'</div>';
-    }).join('');
-    box.scrollTop = box.scrollHeight;
-  }
-
-
-  // ==========================================
-  // בלוק 6: 💡 אזור להוספות ופיצ'רים עתידיים
-  // (כאן תוכל בעתיד להוסיף פונקציות חדשות בלי לגעת בשאר האתר!)
-  // ==========================================
-  function initFutureFeatures() {
-    // מקום פנוי להרחבות עתידיות
-  }
-  initFutureFeatures();
-
-})();
+});
 </script>
 </body>
 </html>
-
