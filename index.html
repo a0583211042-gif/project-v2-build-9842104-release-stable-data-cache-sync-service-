@@ -28,7 +28,7 @@ body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Ro
 
 .container { max-width: 900px; margin: 0px auto; }
 
-/* דף כניסה בהיר ותואם לעיצוב שלך */
+/* דף כניסה בהיר ומאובטח */
 #loginScreen{
   position:fixed;inset:0;background:var(--bg);z-index:1000;display:grid;place-items:center;padding:20px;
 }
@@ -41,7 +41,7 @@ body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Ro
   width:100%;border:2px solid var(--border);border-radius:12px;height:52px;background:#fff;color:#333;font-weight:700;font-size:1rem;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.05);
 }
 .google-login-btn:hover{background:var(--primary-light);border-color:var(--primary);color:var(--primary);}
-.login-note{font-size:0.85px;color:var(--muted);margin-top:20px;}
+.login-note{font-size:0.85rem;color:var(--muted);margin-top:20px;}
 
 #mainApp { display: none; }
 .hidden { display: none !important; }
@@ -73,6 +73,18 @@ header p { font-size: clamp(0.95rem, 2vw, 1.05rem); opacity: 0.92; }
 .week-btn.current { border-color: var(--current); background: var(--current-light); color: rgb(120, 53, 15); }
 
 .instructions { text-align: center; color: rgb(102, 102, 102); font-size: 1.05rem; padding: 40px 20px; background: var(--card); border-radius: 14px; border: 1px solid var(--border); }
+
+/* צ'אט קבוצתי עיצוב תואם */
+.chat-container { background: var(--card); border-radius: 14px; padding: 20px; border: 1px solid var(--border); height: 500px; display: flex; flex-direction: column; }
+.chat-list { flex: 1; overflow-y: auto; padding: 10px 0; display: flex; flex-direction: column; gap: 10px; }
+.msg { max-width: 80%; padding: 12px 16px; background: #f8fafc; border: 1px solid var(--border); border-radius: 14px 14px 4px 14px; align-self: flex-start; }
+.msg.me { align-self: flex-end; background: var(--primary-light); border-color: #bfdbfe; border-radius: 14px 14px 14px 4px; }
+.msg .meta { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; display: flex; gap: 8px; }
+.msg .author { font-weight: 700; color: var(--primary-dark); }
+.msg .body { font-size: 0.95rem; word-break: break-word; white-space: pre-wrap; }
+.chat-compose { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 10px; }
+.chat-compose input { flex: 1; padding: 10px 14px; border-radius: 10px; border: 2px solid var(--border); outline: none; }
+.chat-compose button { padding: 10px 20px; border-radius: 10px; border: none; background: var(--primary); color: #fff; font-weight: 700; cursor: pointer; }
 
 .modal-overlay { position: fixed; inset: 0px; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
 .modal-overlay[hidden] { display: none; }
@@ -120,41 +132,60 @@ header p { font-size: clamp(0.95rem, 2vw, 1.05rem); opacity: 0.92; }
 <div class="container">
   <!-- תפריט ניווט עליון -->
   <nav class="nav-bar">
-    <a href="#" class="nav-btn active">📅 לוח ראשי</a>
+    <button type="button" class="nav-btn active" data-nav="board">📅 לוח ראשי</button>
+    <button type="button" class="nav-btn" data-nav="chat">💬 צ'אט קבוצתי</button>
     <button type="button" class="nav-btn" id="logoutBtn" style="color:#c53030;background:#fff5f5">יציאה</button>
   </nav>
 
-  <header>
-    <h1>לוח שבועות מרוכז</h1>
-    <p>עיון לפי שבוע, לפי שם או לפי קטגוריה (מסתנכרן מול ענן Firebase)</p>
-    <div class="current-week-badge" id="currentBadge">🗓️ השבוע הנוכחי (אוטומטי): <strong id="currentWeekText">שבוע --</strong></div>
-  </header>
+  <!-- אזור הלוח הראשי -->
+  <div id="section-board">
+    <header>
+      <h1>לוח שבועות מרוכז</h1>
+      <p>עיון לפי שבוע, לפי שם או לפי קטגוריה</p>
+      <div class="current-week-badge" id="currentBadge">🗓️ השבוע הנוכחי (אוטומטי): <strong id="currentWeekText">שבוע --</strong></div>
+    </header>
 
-  <div class="view-tabs" role="tablist">
-    <button type="button" class="view-tab active" data-view="week">📅 לפי שבוע</button>
-    <button type="button" class="view-tab" data-view="person">👤 לפי שם</button>
-    <button type="button" class="view-tab" data-view="category">🏷️ לפי קטגוריה</button>
+    <div class="view-tabs" role="tablist">
+      <button type="button" class="view-tab active" data-view="week">📅 לפי שבוע</button>
+      <button type="button" class="view-tab" data-view="person">👤 לפי שם</button>
+      <button type="button" class="view-tab" data-view="category">🏷️ לפי קטגוריה</button>
+    </div>
+
+    <div class="toolbar hidden" id="toolbar">
+      <input type="search" id="search" placeholder="חיפוש...">
+      <button type="button" id="clearBtn">נקה</button>
+    </div>
+
+    <div id="view-week" class="view-panel">
+      <div class="weeks-grid" id="weeksGrid"></div>
+      <div id="instructions" class="instructions">👆 בחר שבוע מהרשימה למעלה כדי להציג את הפעילויות.</div>
+    </div>
+
+    <div id="view-person" class="view-panel hidden">
+      <div id="personContent"></div>
+    </div>
+
+    <div id="view-category" class="view-panel hidden">
+      <div id="categoryContent"></div>
+    </div>
+
+    <div class="no-results" id="noResults">לא נמצאו תוצאות מתאימות לחיפוש.</div>
   </div>
 
-  <div class="toolbar hidden" id="toolbar">
-    <input type="search" id="search" placeholder="חיפוש...">
-    <button type="button" id="clearBtn">נקה</button>
+  <!-- אזור הצ'אט הקבוצתי החי -->
+  <div id="section-chat" class="hidden">
+    <header>
+      <h1>צ'אט קבוצתי חי</h1>
+      <p>תקשורת בזמן אמת מול ענן Firebase</p>
+    </header>
+    <div class="chat-container">
+      <div id="chatList" class="chat-list"></div>
+      <div class="chat-compose">
+        <input id="chatInput" type="text" placeholder="כתוב הודעה לקבוצה...">
+        <button id="chatSend" type="button">שלח</button>
+      </div>
+    </div>
   </div>
-
-  <div id="view-week" class="view-panel">
-    <div class="weeks-grid" id="weeksGrid"></div>
-    <div id="instructions" class="instructions">👆 בחר שבוע מהרשימה למעלה כדי להציג את הפעילויות.</div>
-  </div>
-
-  <div id="view-person" class="view-panel hidden">
-    <div id="personContent"></div>
-  </div>
-
-  <div id="view-category" class="view-panel hidden">
-    <div id="categoryContent"></div>
-  </div>
-
-  <div class="no-results" id="noResults">לא נמצאו תוצאות מתאימות לחיפוש.</div>
 </div>
 </main>
 
@@ -248,6 +279,7 @@ const nameOf = (key) => (key == null || key === '') ? null : (PEOPLE[key] || key
 
 let whitelistEmails = [...INITIAL_EMAILS];
 let cloudTopics = {};
+let chatMessages = [];
 
 function calculateAutomaticWeek() {
   const anchor = { sundayISO: '2026-09-13', week: 5 };
@@ -281,6 +313,11 @@ db.collection("groupData").doc("securityConfig").onSnapshot(async (doc) => {
 db.collection("groupData").doc("customTopics").onSnapshot((doc) => {
   cloudTopics = doc.data() || {};
   renderUI();
+});
+
+db.collection("groupData").doc("chatRoom").onSnapshot((doc) => {
+  chatMessages = (doc.exists && doc.data().messages) ? doc.data().messages : [];
+  renderChatMessages();
 });
 
 const googleLoginBtn = document.getElementById('googleLoginBtn');
@@ -478,6 +515,22 @@ function renderCategoryView() {
   `;
 }
 
+// מעבר בין לוח לצ'אט בתפריט העליון
+document.querySelectorAll('.nav-btn[data-nav]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn[data-nav]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const target = btn.dataset.nav;
+    if (target === 'board') {
+      document.getElementById('section-board').classList.remove('hidden');
+      document.getElementById('section-chat').classList.add('hidden');
+    } else if (target === 'chat') {
+      document.getElementById('section-board').classList.add('hidden');
+      document.getElementById('section-chat').classList.remove('hidden');
+    }
+  });
+});
+
 document.querySelectorAll('.view-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
@@ -517,6 +570,44 @@ if (clearBtn) {
     document.querySelectorAll('li, .person-card').forEach(el => el.style.display = '');
     document.getElementById('noResults').classList.remove('show');
   });
+}
+
+// לוגיקת צ'אט חי מול ענן
+const chatSend = document.getElementById('chatSend');
+const chatInput = document.getElementById('chatInput');
+if (chatSend && chatInput) {
+  chatSend.addEventListener('click', sendChatMsg);
+  chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChatMsg(); });
+}
+
+async function sendChatMsg() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+  chatMessages.push({
+    id: 'msg_' + Date.now(),
+    author: currentUser,
+    text,
+    time: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
+  });
+  if (chatMessages.length > 50) chatMessages = chatMessages.slice(chatMessages.length - 50);
+  await db.collection("groupData").doc("chatRoom").set({ messages: chatMessages });
+  chatInput.value = "";
+}
+
+function renderChatMessages() {
+  const box = document.getElementById('chatList');
+  if (!box) return;
+  if (!chatMessages.length) { box.innerHTML = '<div class="instructions">אין הודעות בקבוצה עדיין.</div>'; return; }
+  box.innerHTML = chatMessages.map(m => {
+    const isMe = m.author.includes(currentUser);
+    return `
+      <div class="msg ${isMe ? 'me' : ''}">
+        <div class="meta"><span class="author">${m.author}</span><span>${m.time}</span></div>
+        <div class="body">${m.text}</div>
+      </div>
+    `;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
 }
 
 });
