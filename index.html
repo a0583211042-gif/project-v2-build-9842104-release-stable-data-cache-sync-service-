@@ -95,20 +95,46 @@ body::before {
 /* מסכים */
 .header-hero { text-align: center; margin-bottom: 20px; background: linear-gradient(135deg, #1e40af, #2563eb); color: rgb(255, 255, 255); padding: 26px 18px; border-radius: 20px; box-shadow: 0 15px 35px rgba(37,99,235,0.2); width: 100%; }
 .header-hero h1 { font-size: clamp(1.3rem, 3vw, 2.1rem); margin-bottom: 6px; font-weight: 900; }
+.current-week-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.22); border: 1px solid rgba(255, 255, 255, 0.4); padding: 6px 16px; border-radius: 999px; font-size: 0.88rem; margin-top: 12px; }
+
+.view-tabs { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; width: 100%; }
+.view-tab { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--primary-dark); font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: 0.2s; }
+.view-tab.active { background: var(--primary); color: rgb(255, 255, 255); border-color: transparent; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; margin-bottom: 16px; width: 100%; }
+.toolbar.hidden { display: none; }
+.toolbar input[type="search"] { flex: 1 1 180px; max-width: 320px; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border-subtle); outline: none; }
+.toolbar button { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border-subtle); background: rgba(255,255,255,0.9); color: var(--primary-dark); font-weight: 700; cursor: pointer; }
 
 .weeks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 8px; margin-bottom: 20px; width: 100%; }
-.week-btn { background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 14px; padding: 12px 4px; text-align: center; font-size: 0.9rem; font-weight: 800; color: var(--primary); cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+.week-btn { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 4px; text-align: center; font-size: 0.9rem; font-weight: 800; color: var(--primary); cursor: pointer; }
 .week-btn.active { background: var(--primary); color: #fff; }
 .week-btn.current { border-color: var(--current); background: var(--current-light); color: rgb(120,53,15); }
 
-.cyber-card { background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(240,246,252,0.75)); backdrop-filter: blur(30px); border: 1px solid var(--border); border-radius: 20px; padding: 22px; box-shadow: 0 15px 30px rgba(37,99,235,0.08); width: 100%; margin-bottom: 16px; position: relative; overflow: hidden; }
+.cyber-card { background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(240,246,252,0.75)); border: 1px solid var(--border); border-radius: 20px; padding: 22px; box-shadow: 0 15px 30px rgba(37,99,235,0.08); width: 100%; margin-bottom: 16px; position: relative; overflow: hidden; }
 .cyber-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg, #2563eb, #0ea5e9, #10b981); }
+.cyber-timer-box { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(14, 165, 233, 0.35); border-radius: 14px; padding: 18px; text-align: center; margin-top: 12px; }
+.cyber-timer-box .time-num { font-size: 1.5rem; font-weight: 900; color: var(--primary); margin: 6px 0; }
+
+.person-card, .category-section { background: var(--card); border-radius: 16px; padding: 16px 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 14px; border: 1px solid var(--border); width: 100%; }
+.person-card h3, .category-section h3 { font-size: 1.1rem; color: var(--primary-dark); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid rgba(203,213,225,0.4); }
+.person-card ul, .category-section ul { list-style: none; }
+.person-card li, .category-section li { padding: 10px 12px; border-radius: 10px; border-inline-start: 3px solid var(--primary); background: rgba(255,255,255,0.8); margin-bottom: 6px; display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--border-subtle); }
+.row-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.week-badge { background: var(--primary); color: rgb(255, 255, 255); padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; }
+.topic-line { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #475569; padding: 4px 6px; border-inline-start: 2px solid #cbd5e1; }
+
+.instructions { text-align: center; color: var(--muted); font-size: 0.95rem; padding: 30px 14px; background: var(--card); border-radius: 16px; border: 1px solid var(--border); width: 100%; }
 
 /* צ'אט */
-.chat-container { background: var(--card); backdrop-filter: blur(25px); border-radius: 20px; padding: 16px; border: 1px solid var(--border); height: 60vh; display: flex; flex-direction: column; width: 100%; }
+.chat-container { background: var(--card); backdrop-filter: blur(25px); border-radius: 20px; padding: 16px; border: 1px solid var(--border); height: 500px; display: flex; flex-direction: column; width: 100%; }
 .chat-list { flex: 1; overflow-y: auto; padding: 6px 0; display: flex; flex-direction: column; gap: 10px; }
 .msg { max-width: 88%; padding: 10px 14px; background: rgba(255,255,255,0.92); border: 1px solid var(--border-subtle); border-radius: 16px 16px 4px 16px; align-self: flex-start; }
 .msg.me { align-self: flex-end; background: linear-gradient(135deg, rgba(37,99,235,0.14), rgba(14,165,233,0.14)); border-color: rgba(37,99,235,0.25); border-radius: 16px 16px 16px 4px; }
+.msg .meta { font-size: 0.7rem; color: var(--muted); margin-bottom: 3px; display: flex; justify-content: space-between; gap: 12px; }
+.msg .author { font-weight: 800; color: var(--primary-dark); }
+.msg .body { font-size: 0.92rem; word-break: break-word; white-space: pre-wrap; }
+.msg-delete { border: none; background: transparent; color: #ef4444; font-size: 0.7rem; font-weight: 700; cursor: pointer; padding: 0 4px; }
 .chat-compose { display: flex; gap: 6px; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: 8px; width: 100%; }
 .chat-compose input { flex: 1; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-subtle); outline: none; background: rgba(255,255,255,0.9); }
 .chat-compose button { padding: 10px 18px; border-radius: 12px; border: none; background: var(--primary); color: #fff; font-weight: 800; cursor: pointer; }
@@ -126,11 +152,13 @@ body::before {
 .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.45); backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 5000; }
 .modal-content { background: rgba(255,255,255,0.95); border-radius: 20px; max-width: 500px; width: 100%; padding: 24px; position: relative; }
 .modal-close { position: absolute; top: 12px; left: 12px; width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(0,0,0,0.05); font-weight: 700; cursor: pointer; }
+.category-row { display: flex; gap: 8px; margin-bottom: 10px; padding: 12px; background: rgba(255,255,255,0.75); border-radius: 12px; border-inline-start: 4px solid var(--primary); }
+.category-name { font-weight: 800; min-width: 80px; color: #334155; font-size: 0.9rem; }
+.category-content { flex: 1; display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.edit-topic-btn { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border-subtle); background: #fff; cursor: pointer; }
 
 .toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -100px); opacity: 0; background: #1e40af; color: white; border-radius: 999px; padding: 12px 24px; z-index: 6000; transition: .4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 25px rgba(30,64,175,0.4); font-weight: 600; text-align: center; }
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
-
-.category-row { display: flex; gap: 8px; margin-bottom: 10px; padding: 12px; background: rgba(255,255,255,0.75); border-radius: 12px; border-inline-start: 4px solid var(--primary); }
 </style>
 </head>
 <body>
@@ -168,8 +196,34 @@ body::before {
     <div class="header-hero">
       <h1>לוח שבועות מרוכז</h1>
       <p>מעקב משימות, נושאים וסנכרון מלא בענן</p>
+      <div class="current-week-badge">🗓️ השבוע הנוכחי: <strong id="currentWeekText">שבוע --</strong></div>
     </div>
-    <div class="weeks-grid" id="weeksGrid"></div>
+    
+    <div class="view-tabs" role="tablist">
+      <button type="button" class="view-tab active" data-view="week">📅 לפי שבוע</button>
+      <button type="button" class="view-tab" data-view="person">👤 לפי שם</button>
+      <button type="button" class="view-tab" data-view="category">🏷️ לפי קטגוריה</button>
+    </div>
+
+    <div class="toolbar hidden" id="toolbar">
+      <input type="search" id="search" placeholder="חיפוש...">
+      <button type="button" id="clearBtn">נקה</button>
+    </div>
+
+    <div id="view-week" class="view-panel">
+      <div class="weeks-grid" id="weeksGrid"></div>
+      <div class="instructions">👆 בחר שבוע מהרשימה למעלה כדי להציג את הפעילויות.</div>
+    </div>
+
+    <div id="view-person" class="view-panel hidden">
+      <div id="personContent"></div>
+    </div>
+
+    <div id="view-category" class="view-panel hidden">
+      <div id="categoryContent"></div>
+    </div>
+
+    <div class="no-results" id="noResults">לא נמצאו תוצאות מתאימות.</div>
   </div>
 
   <!-- אזור אישי -->
@@ -266,18 +320,63 @@ const INITIAL_EMAILS = [
 const firebaseConfig = {
   apiKey: "AIzaSyB_AerhoBm-VJPqf25kOH1S4xGdauV2EDI",
   authDomain: "group-hub-2026.firebaseapp.com",
-  projectId: "group-hub-2026"
+  projectId: "group-hub-2026",
+  storageBucket: "group-hub-2026.firebasestorage.app",
+  messagingSenderId: "816870308307",
+  appId: "1:816870308307:web:c3252cbb51f4f075d49726",
+  measurementId: "G-KMJ1H172PN"
 };
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
+const PEOPLE = {
+  aharonShemesh:    'אהרן שמש', aharonPotesh:     'אהרן פוטש', yaakovPotesh:     'יעקב פוטש',
+  ephraimResh:      'אפרים גוטליב (ר)', ephraimBet:       'אפרים גוטליב (ב)',
+  yehudaKaufman:    'יהודה קויפמן', avrahamGutstein:  'אברהם גוטשטיין', asherPisrbavsky:  'אשר פיסרבסקי'
+};
+
+const WEEK_DATA = {
+  2:  { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'גיוס לצה"ל ושליחות' } },
+  3:  { added: 'aharonPotesh',    sachi: 'asherPisrbavsky',        hasb: null },
+  4:  { added: 'yaakovPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'חגי תשרי' } },
+  5:  { added: 'ephraimResh',     sachi: 'yaakovPotesh',           hasb: null },
+  6:  { added: 'yehudaKaufman',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'ידיעת הארץ' } },
+  7:  { added: 'ephraimBet',      sachi: 'ephraimBet',             hasb: null },
+  8:  { added: 'avrahamGutstein', sachi: null,                     hasb: { trainee: 'ephraimBet',     topic: 'רצח רבין' } },
+  9:  { added: 'asherPisrbavsky', sachi: 'aharonShemesh',          hasb: null },
+  10: { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'ephraimResh',    topic: 'ציונות' } },
+  11: { added: 'yaakovPotesh',    sachi: 'yaakovPotesh',           hasb: null },
+  12: { added: 'aharonPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'ירושלים' } },
+  13: { added: 'ephraimResh',     sachi: 'aharonPotesh',           hasb: null },
+  14: { added: 'ephraimBet',      sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'זהות וחברה ישראלית' } },
+  15: { added: 'yehudaKaufman',   sachi: 'yehudaKaufman',          hasb: null },
+  16: { added: 'avrahamGutstein', sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'איכות הסביבה' } },
+  17: { added: 'asherPisrbavsky', sachi: 'yaakovPotesh',           hasb: null },
+  18: { added: 'aharonShemesh',   sachi: null,                     hasb: { trainee: 'yehudaKaufman',  topic: 'גזענות וסטיגמות' } },
+  19: { added: 'yaakovPotesh',    sachi: 'aharonPotesh',           hasb: null },
+  20: { added: 'aharonPotesh',    sachi: null,                     hasb: { trainee: 'ephraimBet',     topic: 'המהפכה התעשייתית' } },
+  21: { added: 'ephraimResh',     sachi: 'avrahamGutstein',        hasb: null },
+  22: { added: 'ephraimBet',      sachi: null,                     hasb: { trainee: 'aharonPotesh',   topic: 'מבצע אנטבה' } },
+  23: { added: 'avrahamGutstein', sachi: 'aharonShemesh',          hasb: null },
+  24: { added: 'yehudaKaufman',   sachi: null,                     hasb: { trainee: 'avrahamGutstein',topic: 'עבודת צוות וכוחה של קבוצה' } },
+  25: { added: 'asherPisrbavsky', sachi: 'ephraimBet',             hasb: null },
+  26: { added: 'yaakovPotesh',    sachi: null,                     hasb: { trainee: 'aharonShemesh',  topic: 'ש"י עגנון' } },
+  27: { added: 'aharonShemesh',   sachi: 'avrahamGutstein',        hasb: null },
+  28: { added: null,              sachi: null,                     hasb: { trainee: 'asherPisrbavsky',topic: 'מלחמת ששת הימים' } },
+  29: { added: null,              sachi: 'ephraimResh',            hasb: null },
+  30: { added: null,              sachi: null,                     hasb: { trainee: 'yehudaKaufman',  topic: 'מבצע קדש' } }
+};
+
+const ALL_WEEKS = Object.keys(WEEK_DATA).map(Number).sort((a, b) => a - b);
+const nameOf = (key) => (key == null || key === '') ? null : (PEOPLE[key] || key);
+
 let whitelistEmails = [...INITIAL_EMAILS];
 let cloudTopics = {}, chatMessages = [];
 let currentEmail = "", currentUser = "";
 
-// תאריך יחוס לחישוב אוטומטי
+// חישוב שבוע אוטומטי
 const anchorConfig = { sundayISO: '2026-09-13', week: 5 };
 function getActiveWeek() {
   const ref = new Date(anchorConfig.sundayISO + 'T00:00:00');
@@ -293,7 +392,7 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// לוגיקת גרירה לכפתור (Drag FAB)
+// כפתור פלוס נגרר (Draggable FAB)
 const fab = document.getElementById('smartFab');
 let isDragging = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
 
@@ -331,7 +430,7 @@ function drag(e) {
 function setTranslate(xPos, yPos, el) { el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`; }
 fab.addEventListener('click', () => { if(Math.abs(xOffset - initialX) < 5) showToast("תפריט פעולות מהירות יעלה כאן בקרוב!"); });
 
-// אימות וניהול משתמשים
+// אימות וניהול משתמשים (Auth)
 document.getElementById('googleLoginBtn').addEventListener('click', async () => {
   try { await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); } catch (e) {
     try { await auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()); } catch (err) {}
@@ -350,6 +449,16 @@ function initDataListeners() {
   db.collection("groupData").doc("securityConfig").onSnapshot(doc => {
     if (doc.exists && doc.data().whitelist) whitelistEmails = doc.data().whitelist;
     validateAccess();
+  });
+  db.collection("groupData").doc("customTopics").onSnapshot(doc => {
+    cloudTopics = doc.data() || {};
+    if(document.getElementById('mainApp').classList.contains('hidden') === false) {
+      renderWeeksGrid(); renderPersonView(); renderCategoryView(); renderPersonalArea();
+    }
+  });
+  db.collection("groupData").doc("chatRoom").onSnapshot(doc => {
+    chatMessages = doc.exists ? (doc.data().messages || []) : [];
+    renderChat();
   });
 }
 
@@ -370,25 +479,145 @@ function validateAccess() {
     document.getElementById('whitelistEditor').value = whitelistEmails.join('\n');
   }
 
-  loadAppContent();
+  document.getElementById('currentWeekText').textContent = 'שבוע ' + currentActiveWeek;
+  renderWeeksGrid();
+  renderPersonView();
+  renderCategoryView();
+  renderPersonalArea();
 }
 
 document.getElementById('logoutBtn').addEventListener('click', () => { auth.signOut(); location.reload(); });
 
-function loadAppContent() {
+// בניית לוח שבועות
+function renderWeeksGrid() {
   const grid = document.getElementById('weeksGrid');
-  grid.innerHTML = '';
-  for(let w=2; w<=30; w++) {
+  if(!grid) return;
+  grid.innerHTML = ALL_WEEKS.map(w => {
     const isCur = w === currentActiveWeek;
-    grid.innerHTML += `<button class="week-btn ${isCur ? 'current' : ''}" onclick="alert('פרטי שבוע ${w} יעלו כאן')">שבוע ${w}</button>`;
-  }
-
-  db.collection("groupData").doc("chatRoom").onSnapshot(doc => {
-    chatMessages = doc.exists ? (doc.data().messages || []) : [];
-    renderChat();
-  });
+    return `<button type="button" class="week-btn ${isCur ? 'current' : ''}" onclick="openWeekModal(${w})">שבוע ${w}</button>`;
+  }).join('');
 }
 
+window.openWeekModal = function(w) {
+  const d = WEEK_DATA[w] || {};
+  const top = cloudTopics[w] || (d.hasb ? d.hasb.topic : '');
+  
+  document.getElementById('modalBody').innerHTML = `
+    <h2 style="font-size:1.3rem;margin-bottom:16px;color:var(--text)">שבוע ${w} ${w === currentActiveWeek ? '(נוכחי)' : ''}</h2>
+    <div class="category-row"><div class="category-name">ערך מוסף</div><div class="category-content"><strong>${nameOf(d.added) || '<span class="empty-slot">אין</span>'}</strong></div></div>
+    <div class="category-row"><div class="category-name">סח"י</div><div class="category-content"><strong>${nameOf(d.sachi) || '<span class="empty-slot">אין</span>'}</strong></div></div>
+    <div class="category-row hasb"><div class="category-name">הסב"ש</div>
+      <div class="category-content">
+        <strong>${d.hasb ? nameOf(d.hasb.trainee) : '<span class="empty-slot">אין</span>'}</strong>
+        <div class="topic-line">
+          <span>נושא: ${top || '<span class="empty-slot">טרם הוגדר</span>'}</span>
+          <button type="button" class="edit-topic-btn" onclick="editTopic(${w})" title="ערוך נושא">✎</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('weekModal').classList.remove('hidden');
+};
+
+document.getElementById('modalClose').addEventListener('click', () => {
+  document.getElementById('weekModal').classList.add('hidden');
+});
+
+window.editTopic = async function(w) {
+  const d = WEEK_DATA[w] || {};
+  const curr = cloudTopics[w] || (d.hasb ? d.hasb.topic : '');
+  const val = prompt("הכנס נושא חדש לשבוע " + w + ":", curr);
+  if (val !== null) {
+    cloudTopics[w] = val.trim();
+    await db.collection("groupData").doc("customTopics").set(cloudTopics);
+    showToast("הנושא עודכן בהצלחה בענן!");
+    openWeekModal(w);
+  }
+};
+
+// תצוגת אישים
+function renderPersonView() {
+  const container = document.getElementById('personContent');
+  if (!container) return;
+  let byP = {}; Object.values(PEOPLE).forEach(n => byP[n] = []);
+  ALL_WEEKS.forEach(w => {
+    const d = WEEK_DATA[w];
+    if (d.added && PEOPLE[d.added]) byP[PEOPLE[d.added]].push({ w, type: 'ערך מוסף' });
+    if (d.sachi && PEOPLE[d.sachi]) byP[PEOPLE[d.sachi]].push({ w, type: 'סח"י' });
+    if (d.hasb && PEOPLE[d.hasb.trainee]) byP[PEOPLE[d.hasb.trainee]].push({ w, type: 'הסב"ש', topic: cloudTopics[w] || d.hasb.topic });
+  });
+
+  let html = '';
+  for (let [name, tasks] of Object.entries(byP)) {
+    html += `
+      <div class="person-card">
+        <h3>👤 ${name}</h3>
+        <ul>
+          ${tasks.length ? tasks.map(t => `<li><div class="row-head"><span class="week-badge">שבוע ${t.w}</span><strong>${t.type}</strong></div>${t.topic ? `<div class="topic-line">נושא: ${t.topic}</div>` : ''}</li>`).join('') : '<li class="empty-slot">אין משימות רשומות</li>'}
+        </ul>
+      </div>`;
+  }
+  container.innerHTML = html;
+}
+
+// תצוגת קטגוריות
+function renderCategoryView() {
+  const container = document.getElementById('categoryContent');
+  if (!container) return;
+  let addedList = [], sachiList = [], hasbList = [];
+  ALL_WEEKS.forEach(w => {
+    const d = WEEK_DATA[w];
+    if (d.added && PEOPLE[d.added]) addedList.push({ w, name: PEOPLE[d.added] });
+    if (d.sachi && PEOPLE[d.sachi]) sachiList.push({ w, name: PEOPLE[d.sachi] });
+    if (d.hasb && PEOPLE[d.hasb.trainee]) hasbList.push({ w, name: PEOPLE[d.hasb.trainee], topic: cloudTopics[w] || d.hasb.topic });
+  });
+
+  container.innerHTML = `
+    <div class="category-section"><h3>🏷️ ערך מוסף</h3><ul>${addedList.map(item => `<li><div class="row-head"><span class="week-badge">שבוע ${item.w}</span><strong>${item.name}</strong></div></li>`).join('')}</ul></div>
+    <div class="category-section"><h3>🏷️ סח"י</h3><ul>${sachiList.map(item => `<li><div class="row-head"><span class="week-badge">שבוע ${item.w}</span><strong>${item.name}</strong></div></li>`).join('')}</ul></div>
+    <div class="category-section"><h3>🏷️ הסב"ש</h3><ul>${hasbList.map(item => `<li><div class="row-head"><span class="week-badge">שבוע ${item.w}</span><strong>${item.name}</strong></div><div class="topic-line">נושא: ${item.topic || 'טרם הוגדר'}</div></li>`).join('')}</ul></div>
+  `;
+}
+
+// אזור אישי
+function renderPersonalArea() {
+  const container = document.getElementById('personalAreaContent');
+  if (!container) return;
+  let myTasks = [];
+  ALL_WEEKS.forEach(w => {
+    const d = WEEK_DATA[w];
+    if (d.added && (PEOPLE[d.added] === currentUser || d.added.toLowerCase().includes(currentUser.toLowerCase()))) myTasks.push({ w, type: 'ערך מוסף' });
+    if (d.sachi && (PEOPLE[d.sachi] === currentUser || d.sachi.toLowerCase().includes(currentUser.toLowerCase()))) myTasks.push({ w, type: 'סח"י' });
+    if (d.hasb && (PEOPLE[d.hasb.trainee] === currentUser || d.hasb.trainee.toLowerCase().includes(currentUser.toLowerCase()))) myTasks.push({ w, type: 'הסב"ש', topic: cloudTopics[w] || d.hasb.topic });
+  });
+
+  const nextTask = myTasks.find(t => t.w >= currentActiveWeek) || myTasks[0];
+  let timerHtml = `<div class="instructions">אין משימות עתידיות רשומות על שמך במערכת.</div>`;
+  if (nextTask) {
+    const refDate = new Date(anchorConfig.sundayISO + 'T00:00:00');
+    const taskDate = new Date(refDate.getTime() + (nextTask.w - anchorConfig.week) * 7 * 86400000);
+    timerHtml = `
+      <div class="cyber-card">
+        <h2>⏳ ספירה לאחור לתור הבא</h2>
+        <p style="color:var(--muted);font-size:0.9rem">המשימה הקרובה שלך: <strong>שבוע ${nextTask.w} (${nextTask.type})</strong></p>
+        <div class="cyber-timer-box">
+          <div style="font-weight:700;color:var(--primary-dark)">שבוע היעד המשוער במערכת:</div>
+          <div class="time-num">שבוע ${nextTask.w} ${nextTask.w === currentActiveWeek ? '🔥 (מתקיים השבוע!)' : ''}</div>
+          <div style="font-size:0.8rem;color:var(--muted)">תאריך משוער: ${taskDate.toLocaleDateString('he-IL')}</div>
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = timerHtml + `
+    <div class="cyber-card">
+      <h2>👤 פרופיל משתמש פעיל</h2>
+      <p style="font-size:0.9rem;color:var(--muted);margin-top:4px;">שם: <strong>${currentUser}</strong></p>
+      <p style="font-size:0.9rem;color:var(--muted)">דוא"ל: <strong>${currentEmail}</strong></p>
+    </div>
+  `;
+}
+
+// ניווט טאבים ראשי
 document.querySelectorAll('.nav-btn[data-nav]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-btn[data-nav]').forEach(b => b.classList.remove('active'));
@@ -400,29 +629,76 @@ document.querySelectorAll('.nav-btn[data-nav]').forEach(btn => {
   });
 });
 
+// ניווט טאבים משני (לוח)
+document.querySelectorAll('.view-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.add('hidden'));
+    btn.classList.add('active');
+    const view = btn.dataset.view;
+    document.getElementById('view-' + view).classList.remove('hidden');
+    const toolbar = document.getElementById('toolbar');
+    if (view === 'week') toolbar.classList.add('hidden'); else toolbar.classList.remove('hidden');
+  });
+});
+
+// חיפוש
+const searchInput = document.getElementById('search');
+if(searchInput) {
+  searchInput.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    const activePanel = document.querySelector('.view-panel:not(.hidden)');
+    let found = false;
+    activePanel.querySelectorAll('li, .person-card').forEach(el => {
+      const match = el.textContent.toLowerCase().includes(q);
+      el.style.display = match ? '' : 'none';
+      if (match) found = true;
+    });
+    document.getElementById('noResults').classList.toggle('show', !found && q !== '');
+  });
+}
+document.getElementById('clearBtn')?.addEventListener('click', () => {
+  if(searchInput) searchInput.value = '';
+  document.querySelectorAll('li, .person-card').forEach(el => el.style.display = '');
+  document.getElementById('noResults').classList.remove('show');
+});
+
+// צ'אט
 document.getElementById('chatSend').addEventListener('click', sendMsg);
+document.getElementById('chatInput').addEventListener('keydown', (e) => { if(e.key==='Enter') sendMsg(); });
 function sendMsg() {
   const input = document.getElementById('chatInput');
   const txt = input.value.trim(); if(!txt) return;
-  chatMessages.push({ id: Date.now(), author: currentUser, text: txt, time: new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) });
-  if(chatMessages.length > 40) chatMessages.shift();
+  chatMessages.push({ id: 'msg_'+Date.now(), author: currentUser, text: txt, time: new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) });
+  if(chatMessages.length > 50) chatMessages.shift();
   db.collection("groupData").doc("chatRoom").set({messages: chatMessages});
   input.value = '';
 }
+window.deleteChatMsg = async function(id) {
+  if(!confirm("למחוק הודעה זו?")) return;
+  chatMessages = chatMessages.filter(m => m.id !== id);
+  await db.collection("groupData").doc("chatRoom").set({messages: chatMessages});
+  showToast("הודעה נמחקה");
+};
 function renderChat() {
   const box = document.getElementById('chatList');
+  if (!chatMessages.length) { box.innerHTML = '<div class="instructions">אין הודעות.</div>'; return; }
+  const isAtBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 80;
   box.innerHTML = chatMessages.map(m => {
-    const isMe = m.author === currentUser;
+    const isMe = m.author === currentUser || m.author.includes(currentUser);
+    const deleteBtn = isMe ? `<button type="button" class="msg-delete" onclick="deleteChatMsg('${m.id}')">מחק</button>` : '';
     return `<div class="msg ${isMe ? 'me' : ''}">
-      <div class="meta"><b>${m.author}</b> ${m.time}</div>
+      <div class="meta"><span class="author">${m.author}</span><div style="display:flex;gap:10px;align-items:center"><span>${m.time}</span>${deleteBtn}</div></div>
       <div class="body">${m.text}</div>
     </div>`;
   }).join('');
-  box.scrollTop = box.scrollHeight;
+  if(isAtBottom) box.scrollTop = box.scrollHeight;
 }
 
-// שילוב AI (Gemini) מעודכן בדיוק לפי ה-cURL המבוקש
+// AI (Gemini) עם תפיסת שגיאות מגוגל
 document.getElementById('aiChatSend').addEventListener('click', sendAIPrompt);
+document.getElementById('aiChatInput').addEventListener('keydown', (e) => { if(e.key==='Enter') sendAIPrompt(); });
+
 async function sendAIPrompt() {
   const input = document.getElementById('aiChatInput');
   const prompt = input.value.trim(); if(!prompt) return;
@@ -431,7 +707,7 @@ async function sendAIPrompt() {
   box.innerHTML += `<div class="msg me"><div class="meta"><b>אני</b></div><div class="body">${prompt}</div></div>`;
   input.value = ''; box.scrollTop = box.scrollHeight;
 
-  // המפתח החדש מוטמע כאן בדיוק
+  // המפתח האישי שהבאת הוטמע כאן בדיוק
   const API_KEY = 'AQ.Ab8RN6KPu1E6H2N76o032Oe_DsvdDp961sqZ1mXr_fu3B1XjDA'; 
 
   try {
@@ -443,16 +719,15 @@ async function sendAIPrompt() {
       },
       body: JSON.stringify({ 
         contents: [
-          { parts: [{ text: "אתה עוזר וירטואלי באפליקציית ניהול צוות בעברית. " + prompt }] }
+          { parts: [{ text: "אתה עוזר וירטואלי באפליקציית ניהול צוות. תענה בעברית קצרה ולעניין. " + prompt }] }
         ] 
       })
     });
     
     const data = await res.json();
     
-    // טיפול חכם בשגיאות (אם המפתח פג תוקף, נראה בדיוק מה גוגל אומרים)
     if(data.error) {
-      box.innerHTML += `<div class="msg"><div class="meta"><b style="color:#ef4444">שגיאה משרתי גוגל 🤖</b></div><div class="body">התקבלה שגיאה מ-Google: ${data.error.message} (כנראה המפתח פג תוקף).</div></div>`;
+      box.innerHTML += `<div class="msg"><div class="meta"><b style="color:#ef4444">שגיאה משרתי גוגל 🤖</b></div><div class="body">התקבלה שגיאה: ${data.error.message} (כנראה המפתח פג תוקף, יש להנפיק חדש).</div></div>`;
     } else {
       const reply = data.candidates[0].content.parts[0].text;
       box.innerHTML += `<div class="msg"><div class="meta"><b>עוזר חכם 🤖</b></div><div class="body">${reply}</div></div>`;
@@ -460,11 +735,12 @@ async function sendAIPrompt() {
     box.scrollTop = box.scrollHeight;
     
   } catch(e) {
-    box.innerHTML += `<div class="msg"><div class="body">שגיאת רשת. ודא חיבור אינטרנט פעיל.</div></div>`;
+    box.innerHTML += `<div class="msg"><div class="body">שגיאת רשת מול שרתי Google. ודא חיבור אינטרנט פעיל.</div></div>`;
     box.scrollTop = box.scrollHeight;
   }
 }
 
+// מנהל - שמירת הרשאות
 document.getElementById('saveWhitelistBtn').addEventListener('click', () => {
   const val = document.getElementById('whitelistEditor').value;
   const emails = val.split('\n').map(e => e.trim().toLowerCase()).filter(e => e);
