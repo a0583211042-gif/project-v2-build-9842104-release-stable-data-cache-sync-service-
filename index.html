@@ -1,885 +1,113 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#2563eb" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#2563eb">
   <title>סינכרון צוות</title>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
   <style>
-    :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --primary-soft: #eff6ff;
-      --success: #059669;
-      --warning: #d97706;
-      --danger: #dc2626;
-      --purple: #7c3aed;
-      --bg: #f1f5f9;
-      --surface: #ffffff;
-      --surface-2: #f8fafc;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --shadow: 0 12px 32px rgba(15, 23, 42, .08);
-      --radius: 18px;
+    :root{
+      --primary:#2563eb;--primary-dark:#1d4ed8;--soft:#eff6ff;
+      --success:#059669;--warning:#d97706;--danger:#dc2626;
+      --purple:#7c3aed;--bg:#f1f5f9;--surface:#fff;--surface2:#f8fafc;
+      --text:#0f172a;--muted:#64748b;--border:#e2e8f0;
+      --shadow:0 12px 32px rgba(15,23,42,.08);--radius:18px
     }
-
-    [data-theme="dark"] {
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --surface-2: #172033;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --border: #334155;
-      --primary-soft: #172554;
-      --shadow: 0 12px 32px rgba(0, 0, 0, .25);
+    [data-theme=dark]{
+      --bg:#0f172a;--surface:#1e293b;--surface2:#172033;
+      --text:#f8fafc;--muted:#94a3b8;--border:#334155;--soft:#172554
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at top right, rgba(37, 99, 235, .12), transparent 35%),
-        var(--bg);
-      color: var(--text);
-      font-family:
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Arial,
-        sans-serif;
-      line-height: 1.6;
-    }
-
-    button,
-    input,
-    select,
-    textarea {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .app-shell {
-      min-height: 100vh;
-      display: flex;
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{min-height:100vh;background:radial-gradient(circle at top right,#2563eb1f,transparent 35%),var(--bg);color:var(--text);font-family:system-ui,"Segoe UI",Arial,sans-serif;line-height:1.6}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .hidden{display:none!important}
+    .btn{border:0;border-radius:11px;padding:10px 15px;font-weight:700;transition:.2s}
+    .btn:hover{transform:translateY(-1px)}
+    .primary{background:var(--primary);color:#fff}.primary:hover{background:var(--primary-dark)}
+    .secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+    .danger{background:var(--danger);color:#fff}.success{background:var(--success);color:#fff}
+    .icon-btn{width:42px;height:42px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text)}
+    .input,.select,.textarea{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);outline:0}
+    .input:focus,.select:focus,.textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px #2563eb1f}
+    .textarea{min-height:100px;resize:vertical}
 
     /* Login */
-    .login-screen {
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 20px;
-      background:
-        linear-gradient(135deg, rgba(29, 78, 216, .95), rgba(124, 58, 237, .9)),
-        var(--primary);
-    }
-
-    .login-card {
-      width: min(430px, 100%);
-      background: rgba(255, 255, 255, .96);
-      color: #0f172a;
-      padding: 36px 28px;
-      border-radius: 28px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, .25);
-      text-align: center;
-    }
-
-    .login-logo {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 18px;
-      display: grid;
-      place-items: center;
-      border-radius: 22px;
-      color: white;
-      font-size: 34px;
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
-    }
-
-    .login-card h1 {
-      font-size: 2rem;
-      margin-bottom: 8px;
-    }
-
-    .login-card p {
-      color: #64748b;
-      margin-bottom: 24px;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      position: fixed;
-      inset: 0 auto 0 0;
-      width: 260px;
-      padding: 20px;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      z-index: 20;
-      display: flex;
-      flex-direction: column;
-      transition: .25s ease;
-    }
-
-    html[dir="rtl"] .sidebar {
-      inset: 0 0 0 auto;
-      border-right: none;
-      border-left: 1px solid var(--border);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 6px 8px 26px;
-    }
-
-    .brand-icon {
-      width: 42px;
-      height: 42px;
-      display: grid;
-      place-items: center;
-      color: #fff;
-      border-radius: 13px;
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
-      font-size: 22px;
-    }
-
-    .brand strong {
-      display: block;
-      font-size: 1.05rem;
-    }
-
-    .brand small {
-      color: var(--muted);
-      font-size: .74rem;
-    }
-
-    .sidebar-nav {
-      display: grid;
-      gap: 6px;
-    }
-
-    .nav-item {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      color: var(--muted);
-      background: transparent;
-      border: none;
-      border-radius: 12px;
-      text-align: right;
-      transition: .2s;
-    }
-
-    .nav-item:hover,
-    .nav-item.active {
-      color: var(--primary);
-      background: var(--primary-soft);
-      font-weight: 700;
-    }
-
-    .sidebar-footer {
-      margin-top: auto;
-      display: grid;
-      gap: 8px;
-    }
-
-    /* Main */
-    .main {
-      width: calc(100% - 260px);
-      margin-left: 260px;
-      padding: 24px;
-    }
-
-    html[dir="rtl"] .main {
-      margin-left: 0;
-      margin-right: 260px;
-    }
-
-    .topbar {
-      min-height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .mobile-menu {
-      display: none;
-    }
-
-    .topbar-title h1 {
-      font-size: clamp(1.35rem, 3vw, 2rem);
-    }
-
-    .topbar-title p {
-      color: var(--muted);
-      font-size: .9rem;
-    }
-
-    .topbar-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* Common */
-    .btn {
-      border: none;
-      border-radius: 11px;
-      padding: 10px 15px;
-      font-weight: 700;
-      transition: .2s;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .btn-primary {
-      color: white;
-      background: var(--primary);
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn-secondary {
-      color: var(--text);
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-    }
-
-    .btn-danger {
-      color: white;
-      background: var(--danger);
-    }
-
-    .btn-success {
-      color: white;
-      background: var(--success);
-    }
-
-    .btn-icon {
-      width: 42px;
-      height: 42px;
-      padding: 0;
-      display: grid;
-      place-items: center;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      background: var(--surface);
-    }
-
-    .input,
-    .select,
-    .textarea {
-      width: 100%;
-      padding: 11px 13px;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      color: var(--text);
-      background: var(--surface);
-      outline: none;
-    }
-
-    .input:focus,
-    .select:focus,
-    .textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
-    }
-
-    .textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
-
-    .page {
-      display: none;
-    }
-
-    .page.active {
-      display: block;
-      animation: fadeIn .2s ease;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(5px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .page-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .page-heading p {
-      color: var(--muted);
-      margin-top: 3px;
-    }
-
-    .card {
-      padding: 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .card h2,
-    .card h3 {
-      margin-bottom: 14px;
-    }
-
-    /* Dashboard */
-    .welcome {
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 20px;
-      padding: 28px;
-      color: white;
-      border-radius: var(--radius);
-      background: linear-gradient(135deg, #1d4ed8, #7c3aed);
-    }
-
-    .welcome::after {
-      content: "✦";
-      position: absolute;
-      left: 35px;
-      bottom: -28px;
-      font-size: 130px;
-      opacity: .12;
-    }
-
-    .welcome h2 {
-      font-size: clamp(1.4rem, 4vw, 2.25rem);
-      margin-bottom: 5px;
-    }
-
-    .welcome p {
-      opacity: .85;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-
-    .stat-card {
-      display: flex;
-      align-items: center;
-      gap: 13px;
-    }
-
-    .stat-icon {
-      width: 46px;
-      height: 46px;
-      display: grid;
-      place-items: center;
-      flex: 0 0 auto;
-      border-radius: 14px;
-      font-size: 21px;
-      background: var(--primary-soft);
-    }
-
-    .stat-card strong {
-      display: block;
-      font-size: 1.55rem;
-    }
-
-    .stat-card span {
-      color: var(--muted);
-      font-size: .82rem;
-    }
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1.25fr .75fr;
-      gap: 20px;
-    }
-
-    .task-list,
-    .activity-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .task-item,
-    .activity-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 13px;
-      border: 1px solid var(--border);
-      border-radius: 13px;
-      background: var(--surface-2);
-    }
-
-    .task-main {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-    }
-
-    .task-color {
-      width: 9px;
-      height: 42px;
-      border-radius: 999px;
-      background: var(--primary);
-    }
-
-    .task-item small,
-    .activity-item small {
-      display: block;
-      color: var(--muted);
-      font-size: .78rem;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 9px;
-      border-radius: 999px;
-      font-size: .74rem;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .badge-blue {
-      color: #1d4ed8;
-      background: #dbeafe;
-    }
-
-    .badge-green {
-      color: #047857;
-      background: #d1fae5;
-    }
-
-    .badge-orange {
-      color: #b45309;
-      background: #fef3c7;
-    }
-
-    .badge-purple {
-      color: #6d28d9;
-      background: #ede9fe;
-    }
-
-    /* Filters */
-    .filters {
-      display: grid;
-      grid-template-columns: 1fr 180px 180px auto;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    /* Schedule */
-    .schedule-list {
-      display: grid;
-      gap: 14px;
-    }
-
-    .week-card {
-      overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: var(--surface);
-    }
-
-    .week-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 15px 18px;
-      background: var(--surface-2);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .week-header h3 {
-      margin: 0;
-    }
-
-    .week-tasks {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      padding: 14px;
-    }
-
-    .schedule-task {
-      position: relative;
-      padding: 15px;
-      border: 1px solid var(--border);
-      border-radius: 13px;
-    }
-
-    .schedule-task h4 {
-      margin: 8px 0 4px;
-    }
-
-    .schedule-task p {
-      color: var(--muted);
-      font-size: .86rem;
-    }
-
-    .task-actions {
-      display: flex;
-      gap: 5px;
-      margin-top: 12px;
-    }
-
-    .task-actions button {
-      padding: 5px 8px;
-      font-size: .76rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      background: var(--surface);
-    }
-
-    /* Personal */
-    .personal-grid {
-      display: grid;
-      grid-template-columns: .8fr 1.2fr;
-      gap: 20px;
-    }
-
-    .profile-card {
-      text-align: center;
-    }
-
-    .avatar {
-      width: 82px;
-      height: 82px;
-      display: grid;
-      place-items: center;
-      margin: 0 auto 12px;
-      color: white;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
-      font-size: 2rem;
-      font-weight: 800;
-    }
-
-    /* Chat */
-    .chat-card {
-      min-height: 580px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .chat-messages {
-      flex: 1;
-      min-height: 400px;
-      max-height: 600px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 8px 2px 18px;
-    }
-
-    .message {
-      max-width: 78%;
-      padding: 10px 13px;
-      border-radius: 15px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      align-self: flex-start;
-    }
-
-    .message.mine {
-      align-self: flex-end;
-      color: white;
-      background: var(--primary);
-      border-color: var(--primary);
-    }
-
-    .message-meta {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 3px;
-      font-size: .73rem;
-      opacity: .75;
-    }
-
-    .message-body {
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .chat-form {
-      display: flex;
-      gap: 8px;
-      border-top: 1px solid var(--border);
-      padding-top: 14px;
-    }
-
-    /* Admin */
-    .admin-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .form-group {
-      display: grid;
-      gap: 6px;
-    }
-
-    .form-group.full {
-      grid-column: 1 / -1;
-    }
-
-    .form-group label {
-      font-size: .84rem;
-      font-weight: 700;
-    }
-
-    /* Empty */
-    .empty-state {
-      padding: 35px 20px;
-      text-align: center;
-      color: var(--muted);
-      border: 1px dashed var(--border);
-      border-radius: 14px;
-    }
-
-    /* Modal and toast */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: grid;
-      place-items: center;
-      padding: 18px;
-      background: rgba(15, 23, 42, .6);
-    }
-
-    .modal {
-      width: min(580px, 100%);
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: 22px;
-      border-radius: 20px;
-      background: var(--surface);
-      box-shadow: 0 30px 80px rgba(0, 0, 0, .25);
-    }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .toast {
-      position: fixed;
-      right: 24px;
-      bottom: 24px;
-      z-index: 200;
-      max-width: min(380px, calc(100% - 48px));
-      padding: 13px 18px;
-      color: white;
-      border-radius: 12px;
-      background: #0f172a;
-      box-shadow: var(--shadow);
-      transform: translateY(20px);
-      opacity: 0;
-      pointer-events: none;
-      transition: .25s;
-    }
-
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    /* Responsive */
-    @media (max-width: 1100px) {
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .dashboard-grid,
-      .personal-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 800px) {
-      .sidebar {
-        transform: translateX(110%);
-      }
-
-      html[dir="ltr"] .sidebar {
-        transform: translateX(-110%);
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      .main,
-      html[dir="rtl"] .main {
-        width: 100%;
-        margin: 0;
-        padding: 16px;
-      }
-
-      .mobile-menu {
-        display: grid;
-      }
-
-      .topbar {
-        align-items: flex-start;
-      }
-
-      .week-tasks {
-        grid-template-columns: 1fr;
-      }
-
-      .filters {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .filters .input {
-        grid-column: 1 / -1;
-      }
-
-      .admin-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .form-group.full {
-        grid-column: auto;
-      }
-    }
-
-    @media (max-width: 520px) {
-      .stats-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 9px;
-      }
-
-      .stat-card {
-        padding: 14px;
-      }
-
-      .stat-card strong {
-        font-size: 1.25rem;
-      }
-
-      .page-heading {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .filters {
-        grid-template-columns: 1fr;
-      }
-
-      .filters .input {
-        grid-column: auto;
-      }
-
-      .chat-form {
-        flex-direction: column;
-      }
-
-      .message {
-        max-width: 90%;
-      }
-    }
+    #loginScreen{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#1d4ed8f2,#7c3aedeb)}
+    .login-card{width:min(430px,100%);padding:38px 28px;text-align:center;background:#fffffff5;color:#0f172a;border-radius:28px;box-shadow:0 30px 80px #0004}
+    .logo{width:72px;height:72px;margin:0 auto 18px;display:grid;place-items:center;border-radius:22px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:34px}
+    .login-card h1{font-size:2rem;margin-bottom:8px}.login-card p{color:#64748b;margin-bottom:25px}
+    .google-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#111;border:1px solid #d1d5db;border-radius:12px;padding:13px;font-weight:700}
+
+    /* Layout */
+    .app{min-height:100vh;display:flex}
+    .sidebar{position:fixed;inset:0 auto 0 0;width:260px;padding:20px;background:var(--surface);border-right:1px solid var(--border);z-index:20;display:flex;flex-direction:column;transition:.25s}
+    html[dir=rtl] .sidebar{inset:0 0 0 auto;border-right:0;border-left:1px solid var(--border)}
+    .brand{display:flex;align-items:center;gap:12px;padding:6px 8px 26px}
+    .brand-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:22px}
+    .brand small{display:block;color:var(--muted);font-size:.74rem}
+    .nav{display:grid;gap:6px}.nav button{width:100%;display:flex;gap:12px;padding:12px 14px;border:0;border-radius:12px;background:transparent;color:var(--muted);text-align:right}
+    .nav button:hover,.nav button.active{background:var(--soft);color:var(--primary);font-weight:700}
+    .side-bottom{margin-top:auto;display:grid;gap:8px}
+    .main{width:calc(100% - 260px);margin-left:260px;padding:24px}
+    html[dir=rtl] .main{margin-left:0;margin-right:260px}
+    .topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:24px}
+    .mobile-menu{display:none}.topbar h1{font-size:clamp(1.35rem,3vw,2rem)}.topbar p{color:var(--muted);font-size:.9rem}
+    .page{display:none}.page.active{display:block;animation:fade .2s}
+    @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+    .card{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}.heading p{color:var(--muted)}
+    .welcome{padding:28px;margin-bottom:20px;color:#fff;border-radius:var(--radius);background:linear-gradient(135deg,#1d4ed8,#7c3aed)}
+    .welcome h2{font-size:clamp(1.4rem,4vw,2.2rem)}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+    .stat{display:flex;align-items:center;gap:13px}.stat-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;background:var(--soft);font-size:21px}.stat strong{display:block;font-size:1.5rem}.stat span{color:var(--muted);font-size:.82rem}
+    .dashboard{display:grid;grid-template-columns:1.25fr .75fr;gap:20px}
+    .list{display:grid;gap:10px}.item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid var(--border);border-radius:13px;background:var(--surface2)}
+    .item small{display:block;color:var(--muted);font-size:.78rem}
+    .filters{display:grid;grid-template-columns:1fr 180px 180px auto;gap:10px;margin-bottom:18px}
+    .badge{display:inline-flex;padding:4px 9px;border-radius:99px;font-size:.74rem;font-weight:700;white-space:nowrap}
+    .blue{background:#dbeafe;color:#1d4ed8}.green{background:#d1fae5;color:#047857}.orange{background:#fef3c7;color:#b45309}.purple{background:#ede9fe;color:#6d28d9}
+    .weeks{display:grid;gap:14px}.week{overflow:hidden;border:1px solid var(--border);border-radius:16px;background:var(--surface)}.week-head{display:flex;justify-content:space-between;padding:15px 18px;background:var(--surface2);border-bottom:1px solid var(--border)}.tasks{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px}
+    .task{padding:15px;border:1px solid var(--border);border-radius:13px}.task h3{margin:8px 0 3px}.task p{color:var(--muted);font-size:.86rem}.task-actions{display:flex;gap:5px;margin-top:12px}.task-actions button{padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:.75rem}
+    .personal{display:grid;grid-template-columns:.8fr 1.2fr;gap:20px}.profile{text-align:center}.avatar{width:82px;height:82px;display:grid;place-items:center;margin:auto auto 12px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:2rem;font-weight:800}
+    .chat{min-height:560px;display:flex;flex-direction:column}.messages{flex:1;min-height:390px;max-height:600px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:8px 2px 18px}.message{max-width:78%;padding:10px 13px;border-radius:15px;background:var(--surface2);border:1px solid var(--border);align-self:flex-start}.message.mine{align-self:flex-end;background:var(--primary);border-color:var(--primary);color:#fff}.meta{display:flex;justify-content:space-between;gap:20px;margin-bottom:3px;font-size:.73rem;opacity:.75}.body{white-space:pre-wrap;word-break:break-word}.chat-form{display:flex;gap:8px;border-top:1px solid var(--border);padding-top:14px}
+    .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.group{display:grid;gap:6px}.group.full{grid-column:1/-1}.group label{font-size:.84rem;font-weight:700}
+    .empty{padding:32px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:14px}
+    .modal-bg{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;background:#0f172a99}.modal{width:min(580px,100%);max-height:90vh;overflow:auto;padding:22px;border-radius:20px;background:var(--surface)}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    #toast{position:fixed;right:24px;bottom:24px;z-index:200;padding:13px 18px;border-radius:12px;background:#0f172a;color:#fff;opacity:0;transform:translateY(20px);transition:.25s;pointer-events:none}#toast.show{opacity:1;transform:none}
+
+    @media(max-width:1100px){.stats{grid-template-columns:repeat(2,1fr)}.dashboard,.personal{grid-template-columns:1fr}}
+    @media(max-width:800px){
+      .sidebar{transform:translateX(110%)}.sidebar.open{transform:translateX(0)}
+      .main,html[dir=rtl] .main{width:100%;margin:0;padding:16px}.mobile-menu{display:grid}
+      .tasks{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}.filters .input{grid-column:1/-1}.admin-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.group.full{grid-column:auto}
+    }
+    @media(max-width:520px){.stats{gap:9px}.stat{padding:14px}.filters{grid-template-columns:1fr}.filters .input{grid-column:auto}.chat-form{flex-direction:column}.message{max-width:90%}.heading{align-items:flex-start;flex-direction:column}}
   </style>
 </head>
 
 <body>
-  <!-- Login -->
-  <section id="loginScreen" class="login-screen">
+  <section id="loginScreen">
     <div class="login-card">
-      <div class="login-logo">✦</div>
+      <div class="logo">✦</div>
       <h1>סינכרון צוות</h1>
-      <p>מערכת חכמה לניהול משימות, שבועות ותקשורת</p>
-
-      <form id="loginForm">
-        <input
-          id="loginName"
-          class="input"
-          placeholder="השם שלך"
-          required
-          autocomplete="name"
-        />
-
-        <input
-          id="loginEmail"
-          class="input"
-          style="margin-top:10px"
-          type="email"
-          placeholder="כתובת דוא״ל"
-          required
-          autocomplete="email"
-        />
-
-        <button class="btn btn-primary" style="width:100%;margin-top:14px">
-          כניסה למערכת
-        </button>
-      </form>
-
+      <p>מערכת חכמה לניהול משימות ותקשורת</p>
+      <button id="googleLogin" class="google-btn">
+        <span>🔵</span>
+        התחברות באמצעות Google
+      </button>
       <small style="display:block;color:#64748b;margin-top:16px">
-        גרסת הדגמה מקומית
+        הכניסה מאובטחת באמצעות חשבון Google
       </small>
     </div>
   </section>
 
-  <!-- App -->
-  <div id="appShell" class="app-shell hidden">
+  <div id="app" class="app hidden">
     <aside id="sidebar" class="sidebar">
       <div class="brand">
         <div class="brand-icon">✦</div>
@@ -889,322 +117,163 @@
         </div>
       </div>
 
-      <nav class="sidebar-nav">
-        <button class="nav-item active" data-page="dashboard">
-          <span>📊</span> לוח בקרה
-        </button>
-
-        <button class="nav-item" data-page="schedule">
-          <span>📅</span> לוח שבועות
-        </button>
-
-        <button class="nav-item" data-page="personal">
-          <span>👤</span> האזור האישי
-        </button>
-
-        <button class="nav-item" data-page="chat">
-          <span>💬</span> צ'אט קבוצתי
-        </button>
-
-        <button class="nav-item" data-page="assistant">
-          <span>🤖</span> עוזר חכם
-        </button>
-
-        <button id="adminNav" class="nav-item hidden" data-page="admin">
-          <span>🛡️</span> אזור ניהול
-        </button>
+      <nav class="nav">
+        <button class="active" data-page="dashboard">📊 לוח בקרה</button>
+        <button data-page="schedule">📅 לוח שבועות</button>
+        <button data-page="personal">👤 אזור אישי</button>
+        <button data-page="chat">💬 צ׳אט קבוצתי</button>
+        <button id="adminNav" class="hidden" data-page="admin">🛡️ ממשק ניהול</button>
       </nav>
 
-      <div class="sidebar-footer">
-        <button id="themeBtn" class="nav-item">
-          <span>🌙</span> מצב כהה
-        </button>
-
-        <button id="logoutBtn" class="nav-item">
-          <span>⎋</span> יציאה
-        </button>
+      <div class="side-bottom">
+        <button id="themeBtn" class="nav">🌙 מצב כהה</button>
+        <button id="logoutBtn" class="nav">⎋ יציאה</button>
       </div>
     </aside>
 
     <main class="main">
       <header class="topbar">
         <div style="display:flex;align-items:center;gap:12px">
-          <button id="mobileMenuBtn" class="btn-icon mobile-menu">☰</button>
-
-          <div class="topbar-title">
+          <button id="mobileMenu" class="icon-btn mobile-menu">☰</button>
+          <div>
             <h1 id="pageTitle">לוח בקרה</h1>
-            <p id="pageSubtitle">ברוך הבא למערכת</p>
+            <p id="pageSubtitle">סקירה כללית של הפעילות</p>
           </div>
         </div>
-
-        <div class="topbar-actions">
-          <span id="userBadge" class="badge badge-blue"></span>
-        </div>
+        <span id="userBadge" class="badge blue"></span>
       </header>
 
-      <!-- Dashboard -->
       <section id="page-dashboard" class="page active">
         <div class="welcome">
-          <h2 id="welcomeTitle">שלום 👋</h2>
+          <h2 id="welcome">שלום 👋</h2>
           <p>כאן אפשר לראות את כל מה שקורה בצוות.</p>
         </div>
 
-        <div class="stats-grid">
-          <div class="card stat-card">
-            <div class="stat-icon">📅</div>
-            <div>
-              <strong id="statWeeks">0</strong>
-              <span>שבועות במערכת</span>
-            </div>
-          </div>
-
-          <div class="card stat-card">
-            <div class="stat-icon">✅</div>
-            <div>
-              <strong id="statTasks">0</strong>
-              <span>משימות פעילות</span>
-            </div>
-          </div>
-
-          <div class="card stat-card">
-            <div class="stat-icon">👥</div>
-            <div>
-              <strong id="statPeople">0</strong>
-              <span>אנשי צוות</span>
-            </div>
-          </div>
-
-          <div class="card stat-card">
-            <div class="stat-icon">💬</div>
-            <div>
-              <strong id="statMessages">0</strong>
-              <span>הודעות בצ'אט</span>
-            </div>
-          </div>
+        <div class="stats">
+          <div class="card stat"><div class="stat-icon">📅</div><div><strong id="statWeeks">0</strong><span>שבועות</span></div></div>
+          <div class="card stat"><div class="stat-icon">✅</div><div><strong id="statTasks">0</strong><span>משימות</span></div></div>
+          <div class="card stat"><div class="stat-icon">👥</div><div><strong id="statUsers">0</strong><span>משתמשים</span></div></div>
+          <div class="card stat"><div class="stat-icon">💬</div><div><strong id="statMessages">0</strong><span>הודעות</span></div></div>
         </div>
 
-        <div class="dashboard-grid">
+        <div class="dashboard">
           <div class="card">
-            <div class="page-heading">
-              <div>
-                <h2>המשימות הקרובות</h2>
-                <p>המשימות הבאות בלוח</p>
-              </div>
-              <button class="btn btn-secondary" data-go="schedule">לכל המשימות</button>
-            </div>
-
-            <div id="upcomingTasks" class="task-list"></div>
+            <div class="heading"><div><h2>משימות קרובות</h2><p>המשימות הבאות בלוח</p></div></div>
+            <div id="upcoming" class="list"></div>
           </div>
-
           <div class="card">
-            <h2>פעילות אחרונה</h2>
-            <div id="activityList" class="activity-list"></div>
+            <h2>הפעילות שלי</h2>
+            <div id="myActivity" class="list"></div>
           </div>
         </div>
       </section>
 
-      <!-- Schedule -->
       <section id="page-schedule" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>לוח שבועות</h1>
-            <p>ניהול משימות, נושאים ואחראים</p>
-          </div>
-
-          <button id="addTaskBtn" class="btn btn-primary">
-            ＋ משימה חדשה
-          </button>
+        <div class="heading">
+          <div><h1>לוח שבועות</h1><p>ניהול משימות, נושאים ואחראים</p></div>
+          <button id="newTask" class="btn primary hidden">＋ משימה חדשה</button>
         </div>
 
         <div class="filters">
-          <input id="searchInput" class="input" placeholder="חיפוש לפי נושא, אדם או קטגוריה..." />
-
-          <select id="categoryFilter" class="select">
+          <input id="search" class="input" placeholder="חיפוש משימה, אדם או קטגוריה">
+          <select id="category" class="select">
             <option value="">כל הקטגוריות</option>
-            <option value="ערך מוסף">ערך מוסף</option>
-            <option value="סח״י">סח״י</option>
-            <option value="הסב״ש">הסב״ש</option>
-            <option value="אחר">אחר</option>
+            <option>ערך מוסף</option><option>סח״י</option><option>הסב״ש</option><option>אחר</option>
           </select>
-
-          <select id="statusFilter" class="select">
+          <select id="status" class="select">
             <option value="">כל הסטטוסים</option>
-            <option value="planned">מתוכנן</option>
-            <option value="active">פעיל</option>
-            <option value="done">הושלם</option>
+            <option value="planned">מתוכנן</option><option value="active">פעיל</option><option value="done">הושלם</option>
           </select>
-
-          <button id="clearFiltersBtn" class="btn btn-secondary">נקה</button>
+          <button id="clearFilters" class="btn secondary">נקה</button>
         </div>
-
-        <div id="scheduleList" class="schedule-list"></div>
+        <div id="weeks" class="weeks"></div>
       </section>
 
-      <!-- Personal -->
       <section id="page-personal" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>האזור האישי</h1>
-            <p>המשימות והפרטים שלך</p>
-          </div>
-        </div>
-
-        <div class="personal-grid">
-          <div class="card profile-card">
-            <div id="avatar" class="avatar">א</div>
-            <h2 id="profileName">משתמש</h2>
+        <div class="heading"><div><h1>האזור האישי</h1><p>המשימות שלך</p></div></div>
+        <div class="personal">
+          <div class="card profile">
+            <div id="avatar" class="avatar">מ</div>
+            <h2 id="profileName"></h2>
             <p id="profileEmail" style="color:var(--muted)"></p>
-            <hr style="border:0;border-top:1px solid var(--border);margin:20px 0" />
+            <hr style="border:0;border-top:1px solid var(--border);margin:20px 0">
             <div id="profileStats"></div>
           </div>
-
-          <div class="card">
-            <h2>המשימות שלי</h2>
-            <div id="personalTasks" class="task-list"></div>
-          </div>
+          <div class="card"><h2>המשימות שלי</h2><div id="personalTasks" class="list"></div></div>
         </div>
       </section>
 
-      <!-- Chat -->
       <section id="page-chat" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>צ'אט קבוצתי</h1>
-            <p>תקשורת מהירה עם חברי הצוות</p>
-          </div>
-        </div>
-
-        <div class="card chat-card">
-          <div id="chatMessages" class="chat-messages"></div>
-
+        <div class="heading"><div><h1>צ׳אט קבוצתי</h1><p>תקשורת עם חברי הצוות</p></div></div>
+        <div class="card chat">
+          <div id="messages" class="messages"></div>
           <form id="chatForm" class="chat-form">
-            <input id="chatInput" class="input" placeholder="כתוב הודעה..." maxlength="500" />
-            <button class="btn btn-primary">שלח</button>
+            <input id="chatInput" class="input" maxlength="500" placeholder="כתוב הודעה">
+            <button class="btn primary">שלח</button>
           </form>
         </div>
       </section>
 
-      <!-- Assistant -->
-      <section id="page-assistant" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>עוזר חכם</h1>
-            <p>שאל שאלות על המשימות והמערכת</p>
-          </div>
-        </div>
-
-        <div class="card chat-card">
-          <div id="assistantMessages" class="chat-messages">
-            <div class="message">
-              <div class="message-meta">
-                <strong>עוזר חכם 🤖</strong>
-                <span>עכשיו</span>
-              </div>
-              <div class="message-body">
-                שלום! אפשר לשאול אותי מי אחראי על שבוע מסוים, מה המשימה הבאה שלך או כמה משימות קיימות במערכת.
-              </div>
-            </div>
-          </div>
-
-          <form id="assistantForm" class="chat-form">
-            <input id="assistantInput" class="input" placeholder="שאל שאלה..." />
-            <button class="btn btn-success">שאל</button>
-          </form>
-        </div>
-      </section>
-
-      <!-- Admin -->
       <section id="page-admin" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>אזור ניהול</h1>
-            <p>ניהול משתמשים, נתונים והגדרות מערכת</p>
-          </div>
-        </div>
+        <div class="heading"><div><h1>ממשק ניהול</h1><p>ניהול מלא של המערכת</p></div></div>
 
         <div class="admin-grid">
           <div class="card">
-            <h2>הוספת חבר צוות</h2>
-
-            <form id="personForm" class="form-grid">
-              <div class="form-group">
-                <label>שם מלא</label>
-                <input id="personName" class="input" required />
-              </div>
-
-              <div class="form-group">
-                <label>דוא״ל</label>
-                <input id="personEmail" class="input" type="email" required />
-              </div>
-
-              <div class="form-group full">
-                <button class="btn btn-primary">הוסף חבר צוות</button>
-              </div>
-            </form>
-
-            <h3 style="margin-top:24px">חברי צוות</h3>
-            <div id="peopleList"></div>
+            <h2>ניהול משתמשים</h2>
+            <p style="color:var(--muted);margin-bottom:14px">
+              משתמש חדש צריך להתחבר פעם אחת באמצעות Google לפני שיופיע כאן.
+            </p>
+            <div id="usersList" class="list"></div>
           </div>
 
           <div class="card">
-            <h2>כלי מערכת</h2>
-
+            <h2>ניהול מערכת</h2>
             <div style="display:grid;gap:10px">
-              <button id="exportBtn" class="btn btn-secondary">
-                📥 ייצוא נתונים
-              </button>
-
-              <button id="resetBtn" class="btn btn-danger">
-                ⚠️ איפוס נתוני הדגמה
-              </button>
+              <button id="exportData" class="btn secondary">📥 ייצוא נתונים</button>
+              <button id="broadcast" class="btn primary">📢 הודעה מערכתית</button>
             </div>
-
-            <div style="margin-top:25px;padding:14px;border-radius:12px;background:var(--primary-soft);color:var(--muted);font-size:.86rem">
-              בגרסה המחוברת לענן, פעולות אלו יוגנו באמצעות הרשאות Firebase.
-            </div>
+            <p style="color:var(--muted);font-size:.85rem;margin-top:18px">
+              הרשאות האבטחה האמיתיות מוגדרות ב־Firestore Rules, ולא רק במסך הזה.
+            </p>
           </div>
         </div>
       </section>
     </main>
   </div>
 
-  <!-- Modal -->
-  <div id="modalBackdrop" class="modal-backdrop hidden">
+  <div id="modalBg" class="modal-bg hidden">
     <div class="modal">
-      <div class="modal-header">
+      <div class="modal-head">
         <h2 id="modalTitle">משימה חדשה</h2>
-        <button id="closeModalBtn" class="btn-icon">✕</button>
+        <button id="closeModal" class="icon-btn">✕</button>
       </div>
 
       <form id="taskForm" class="form-grid">
-        <input id="taskId" type="hidden" />
+        <input id="taskId" type="hidden">
 
-        <div class="form-group">
-          <label>שבוע</label>
-          <input id="taskWeek" class="input" type="number" min="1" required />
+        <div class="group">
+          <label>מספר שבוע</label>
+          <input id="taskWeek" class="input" type="number" min="1" required>
         </div>
 
-        <div class="form-group">
+        <div class="group">
           <label>קטגוריה</label>
-          <select id="taskCategory" class="select" required>
-            <option value="ערך מוסף">ערך מוסף</option>
-            <option value="סח״י">סח״י</option>
-            <option value="הסב״ש">הסב״ש</option>
-            <option value="אחר">אחר</option>
+          <select id="taskCategory" class="select">
+            <option>ערך מוסף</option><option>סח״י</option><option>הסב״ש</option><option>אחר</option>
           </select>
         </div>
 
-        <div class="form-group">
+        <div class="group">
           <label>כותרת</label>
-          <input id="taskTitle" class="input" required />
+          <input id="taskTitle" class="input" required>
         </div>
 
-        <div class="form-group">
+        <div class="group">
           <label>אחראי</label>
-          <input id="taskAssignee" class="input" required />
+          <input id="taskAssignee" class="input" required>
         </div>
 
-        <div class="form-group">
+        <div class="group">
           <label>סטטוס</label>
           <select id="taskStatus" class="select">
             <option value="planned">מתוכנן</option>
@@ -1213,123 +282,62 @@
           </select>
         </div>
 
-        <div class="form-group">
-          <label>צבע</label>
-          <select id="taskColor" class="select">
-            <option value="blue">כחול</option>
-            <option value="green">ירוק</option>
-            <option value="orange">כתום</option>
-            <option value="purple">סגול</option>
-          </select>
+        <div class="group">
+          <label>פרטים</label>
+          <input id="taskDescription" class="input">
         </div>
 
-        <div class="form-group full">
-          <label>פרטים / נושא</label>
-          <textarea id="taskDescription" class="textarea"></textarea>
-        </div>
-
-        <div class="form-group full" style="display:flex;justify-content:flex-end;gap:8px">
-          <button type="button" id="cancelModalBtn" class="btn btn-secondary">ביטול</button>
-          <button class="btn btn-primary">שמירה</button>
+        <div class="group full" style="display:flex;justify-content:flex-end;gap:8px">
+          <button type="button" id="cancelModal" class="btn secondary">ביטול</button>
+          <button class="btn primary">שמירה</button>
         </div>
       </form>
     </div>
   </div>
 
-  <div id="toast" class="toast"></div>
+  <div id="toast"></div>
 
   <script>
     "use strict";
 
-    const STORAGE_KEY = "team_sync_v2";
-
-    const defaultData = {
-      currentUser: null,
-
-      people: [
-        { id: "p1", name: "אהרן שמש", email: "aharon@example.com" },
-        { id: "p2", name: "אהרן פוטש", email: "aharon2@example.com" },
-        { id: "p3", name: "יעקב פוטש", email: "yaakov@example.com" },
-        { id: "p4", name: "אפרים גוטליב", email: "ephraim@example.com" },
-        { id: "p5", name: "יהודה קויפמן", email: "yehuda@example.com" }
-      ],
-
-      tasks: [
-        {
-          id: "t1",
-          week: 1,
-          category: "ערך מוסף",
-          title: "פתיחת שבוע",
-          assignee: "אהרן שמש",
-          status: "active",
-          color: "blue",
-          description: "פתיחת השבוע והצגת היעדים המרכזיים."
-        },
-        {
-          id: "t2",
-          week: 1,
-          category: "הסב״ש",
-          title: "גיוס לצה״ל ושליחות",
-          assignee: "אפרים גוטליב",
-          status: "planned",
-          color: "purple",
-          description: "הכנת תוכן והעברת הפעילות."
-        },
-        {
-          id: "t3",
-          week: 2,
-          category: "סח״י",
-          title: "פעילות קבוצתית",
-          assignee: "יעקב פוטש",
-          status: "planned",
-          color: "green",
-          description: "פעילות צוותית משותפת."
-        },
-        {
-          id: "t4",
-          week: 3,
-          category: "הסב״ש",
-          title: "חגי תשרי",
-          assignee: "יהודה קויפמן",
-          status: "planned",
-          color: "orange",
-          description: "הכנת נושא לשיחה קבוצתית."
-        }
-      ],
-
-      messages: [
-        {
-          id: "m1",
-          author: "מערכת",
-          text: "ברוכים הבאים למערכת החדשה!",
-          time: new Date().toISOString()
-        }
-      ],
-
-      activity: [
-        {
-          text: "נוצרה מערכת חדשה",
-          time: new Date().toISOString()
-        }
-      ]
+    /*
+      החלף את הערכים האלה בפרטי Firebase שלך.
+      אין להכניס לכאן מפתח Gemini או סודות אחרים.
+    */
+    const firebaseConfig = {
+      apiKey: "PASTE_FIREBASE_API_KEY",
+      authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
+      projectId: "PASTE_PROJECT_ID",
+      storageBucket: "PASTE_PROJECT_ID.appspot.com",
+      messagingSenderId: "PASTE_SENDER_ID",
+      appId: "PASTE_APP_ID"
     };
 
-    let data = loadData();
-    let activePage = "dashboard";
+    /*
+      זה החשבון היחיד שמקבל ממשק ניהול.
+      ההגנה האמיתית תוגדר גם ב-Firestore Rules.
+    */
+    const ADMIN_EMAIL = "a0583211042@gmail.com";
 
-    const $ = (selector) => document.querySelector(selector);
+    firebase.initializeApp(firebaseConfig);
 
-    function loadData() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        return saved ? JSON.parse(saved) : structuredClone(defaultData);
-      } catch {
-        return structuredClone(defaultData);
-      }
-    }
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-    function saveData() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    let currentUser = null;
+    let tasks = [];
+    let users = [];
+    let unsubscribeTasks = null;
+    let unsubscribeUsers = null;
+    let unsubscribeMessages = null;
+
+    const $ = selector => document.querySelector(selector);
+
+    function isAdmin() {
+      return currentUser &&
+        currentUser.email &&
+        currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
     }
 
     function escapeHTML(value) {
@@ -1341,24 +349,23 @@
         .replaceAll("'", "&#039;");
     }
 
-    function showToast(message) {
-      const toast = $("#toast");
-      toast.textContent = message;
-      toast.classList.add("show");
-
-      clearTimeout(showToast.timer);
-      showToast.timer = setTimeout(() => {
-        toast.classList.remove("show");
-      }, 2800);
+    function toast(message) {
+      const el = $("#toast");
+      el.textContent = message;
+      el.classList.add("show");
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => el.classList.remove("show"), 3000);
     }
 
-    function formatDate(date) {
+    function formatDate(value) {
+      if (!value) return "";
+      const date = value.toDate ? value.toDate() : new Date(value);
       return new Intl.DateTimeFormat("he-IL", {
         day: "2-digit",
         month: "2-digit",
         hour: "2-digit",
         minute: "2-digit"
-      }).format(new Date(date));
+      }).format(date);
     }
 
     function initials(name) {
@@ -1366,176 +373,183 @@
         .split(" ")
         .slice(0, 2)
         .map(word => word[0])
-        .join("")
-        .toUpperCase();
+        .join("");
+    }
+
+    function categoryClass(category) {
+      if (category === "הסב״ש") return "purple";
+      if (category === "סח״י") return "green";
+      if (category === "ערך מוסף") return "blue";
+      return "orange";
     }
 
     function statusText(status) {
-      return {
-        planned: "מתוכנן",
-        active: "פעיל",
-        done: "הושלם"
-      }[status] || status;
+      return { planned: "מתוכנן", active: "פעיל", done: "הושלם" }[status] || status;
     }
 
-    function badgeClass(category) {
-      if (category === "הסב״ש") return "badge-purple";
-      if (category === "סח״י") return "badge-green";
-      if (category === "ערך מוסף") return "badge-blue";
-      return "badge-orange";
+    function showLogin() {
+      $("#loginScreen").classList.remove("hidden");
+      $("#app").classList.add("hidden");
     }
 
-    function colorValue(color) {
-      return {
-        blue: "#2563eb",
-        green: "#059669",
-        orange: "#d97706",
-        purple: "#7c3aed"
-      }[color] || "#2563eb";
-    }
-
-    function isAdmin() {
-      return data.currentUser?.email?.toLowerCase() === "admin@example.com";
-    }
-
-    function addActivity(text) {
-      data.activity.unshift({
-        text,
-        time: new Date().toISOString()
-      });
-
-      data.activity = data.activity.slice(0, 12);
-      saveData();
-    }
-
-    function renderApp() {
-      const user = data.currentUser;
-
-      if (!user) {
-        $("#loginScreen").classList.remove("hidden");
-        $("#appShell").classList.add("hidden");
-        return;
-      }
-
+    function showApp() {
       $("#loginScreen").classList.add("hidden");
-      $("#appShell").classList.remove("hidden");
+      $("#app").classList.remove("hidden");
 
-      $("#userBadge").textContent = user.name;
-      $("#welcomeTitle").textContent = `שלום ${user.name} 👋`;
-      $("#profileName").textContent = user.name;
-      $("#profileEmail").textContent = user.email;
-      $("#avatar").textContent = initials(user.name);
+      $("#userBadge").textContent = currentUser.displayName || currentUser.email;
+      $("#welcome").textContent = `שלום ${currentUser.displayName || "חבר צוות"} 👋`;
+      $("#profileName").textContent = currentUser.displayName || "";
+      $("#profileEmail").textContent = currentUser.email || "";
+      $("#avatar").textContent = initials(currentUser.displayName);
 
       $("#adminNav").classList.toggle("hidden", !isAdmin());
+      $("#newTask").classList.toggle("hidden", !isAdmin());
+
+      startListeners();
+    }
+
+    async function saveUser() {
+      const ref = db.collection("users").doc(currentUser.uid);
+      const snapshot = await ref.get();
+
+      if (!snapshot.exists) {
+        await ref.set({
+          uid: currentUser.uid,
+          name: currentUser.displayName || "",
+          email: currentUser.email.toLowerCase(),
+          photoURL: currentUser.photoURL || "",
+          role: isAdmin() ? "admin" : "member",
+          active: isAdmin(),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
+
+    function startListeners() {
+      if (unsubscribeTasks) unsubscribeTasks();
+      if (unsubscribeUsers) unsubscribeUsers();
+      if (unsubscribeMessages) unsubscribeMessages();
+
+      unsubscribeTasks = db.collection("tasks")
+        .orderBy("week")
+        .onSnapshot(snapshot => {
+          tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderAll();
+        }, handleFirestoreError);
+
+      unsubscribeUsers = db.collection("users")
+        .onSnapshot(snapshot => {
+          users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderAll();
+        }, handleFirestoreError);
+
+      unsubscribeMessages = db.collection("chatMessages")
+        .orderBy("createdAt", "asc")
+        .limitToLast(100)
+        .onSnapshot(snapshot => {
+          const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderMessages(messages);
+          $("#statMessages").textContent = messages.length;
+        }, handleFirestoreError);
+    }
+
+    function handleFirestoreError(error) {
+      console.error(error);
+      toast("שגיאה בגישה לנתונים. בדוק את הגדרות Firebase Rules.");
+    }
+
+    function renderAll() {
+      const weeks = new Set(tasks.map(task => task.week));
+      $("#statWeeks").textContent = weeks.size;
+      $("#statTasks").textContent = tasks.length;
+      $("#statUsers").textContent = users.length;
 
       renderDashboard();
       renderSchedule();
       renderPersonal();
-      renderChat();
-      renderPeople();
+      renderUsers();
     }
 
     function renderDashboard() {
-      const peopleCount = new Set(data.tasks.map(task => task.assignee)).size;
-
-      $("#statWeeks").textContent = new Set(data.tasks.map(task => task.week)).size;
-      $("#statTasks").textContent = data.tasks.length;
-      $("#statPeople").textContent = peopleCount;
-      $("#statMessages").textContent = data.messages.length;
-
-      const upcoming = [...data.tasks]
+      const upcoming = tasks
         .filter(task => task.status !== "done")
-        .sort((a, b) => a.week - b.week)
+        .sort((a, b) => Number(a.week) - Number(b.week))
         .slice(0, 5);
 
-      $("#upcomingTasks").innerHTML = upcoming.length
+      $("#upcoming").innerHTML = upcoming.length
         ? upcoming.map(task => `
-          <div class="task-item">
-            <div class="task-main">
-              <div class="task-color" style="background:${colorValue(task.color)}"></div>
-              <div>
-                <strong>${escapeHTML(task.title)}</strong>
-                <small>שבוע ${task.week} · ${escapeHTML(task.assignee)}</small>
-              </div>
+          <div class="item">
+            <div>
+              <strong>${escapeHTML(task.title)}</strong>
+              <small>שבוע ${task.week} · ${escapeHTML(task.assignee)}</small>
             </div>
-            <span class="badge ${badgeClass(task.category)}">
-              ${escapeHTML(task.category)}
-            </span>
+            <span class="badge ${categoryClass(task.category)}">${escapeHTML(task.category)}</span>
           </div>
         `).join("")
-        : `<div class="empty-state">אין משימות קרובות.</div>`;
+        : `<div class="empty">אין משימות קרובות.</div>`;
 
-      $("#activityList").innerHTML = data.activity.length
-        ? data.activity.slice(0, 6).map(item => `
-          <div class="activity-item">
-            <span>${escapeHTML(item.text)}</span>
-            <small>${formatDate(item.time)}</small>
+      const mine = tasks
+        .filter(task => task.assignee === currentUser.displayName)
+        .slice(0, 5);
+
+      $("#myActivity").innerHTML = mine.length
+        ? mine.map(task => `
+          <div class="item">
+            <div>
+              <strong>${escapeHTML(task.title)}</strong>
+              <small>שבוע ${task.week}</small>
+            </div>
+            <span class="badge ${task.status === "done" ? "green" : "orange"}">${statusText(task.status)}</span>
           </div>
         `).join("")
-        : `<div class="empty-state">אין פעילות אחרונה.</div>`;
+        : `<div class="empty">אין משימות המשויכות אליך.</div>`;
     }
 
     function renderSchedule() {
-      const query = ($("#searchInput")?.value || "").trim().toLowerCase();
-      const category = $("#categoryFilter")?.value || "";
-      const status = $("#statusFilter")?.value || "";
+      const query = ($("#search").value || "").trim().toLowerCase();
+      const category = $("#category").value;
+      const status = $("#status").value;
 
-      const filtered = data.tasks
-        .filter(task => {
-          const haystack = [
-            task.title,
-            task.assignee,
-            task.category,
-            task.description,
-            task.week
-          ].join(" ").toLowerCase();
+      const filtered = tasks.filter(task => {
+        const text = [
+          task.title, task.assignee, task.category,
+          task.description, task.week
+        ].join(" ").toLowerCase();
 
-          return (
-            (!query || haystack.includes(query)) &&
-            (!category || task.category === category) &&
-            (!status || task.status === status)
-          );
-        })
-        .sort((a, b) => a.week - b.week);
+        return (!query || text.includes(query)) &&
+          (!category || task.category === category) &&
+          (!status || task.status === status);
+      });
 
       const groups = {};
-
       filtered.forEach(task => {
-        if (!groups[task.week]) groups[task.week] = [];
+        groups[task.week] ||= [];
         groups[task.week].push(task);
       });
 
-      const weeks = Object.keys(groups).sort((a, b) => Number(a) - Number(b));
+      const weekNumbers = Object.keys(groups).sort((a, b) => Number(a) - Number(b));
 
-      $("#scheduleList").innerHTML = weeks.length
-        ? weeks.map(week => `
-          <article class="week-card">
-            <div class="week-header">
+      $("#weeks").innerHTML = weekNumbers.length
+        ? weekNumbers.map(week => `
+          <article class="week">
+            <div class="week-head">
               <h3>שבוע ${week}</h3>
-              <span class="badge badge-blue">${groups[week].length} משימות</span>
+              <span class="badge blue">${groups[week].length} משימות</span>
             </div>
-
-            <div class="week-tasks">
+            <div class="tasks">
               ${groups[week].map(task => `
-                <div class="schedule-task">
-                  <span class="badge ${badgeClass(task.category)}">
-                    ${escapeHTML(task.category)}
-                  </span>
-
-                  <h4>${escapeHTML(task.title)}</h4>
+                <div class="task">
+                  <span class="badge ${categoryClass(task.category)}">${escapeHTML(task.category)}</span>
+                  <h3>${escapeHTML(task.title)}</h3>
                   <p>👤 ${escapeHTML(task.assignee)}</p>
                   <p>${escapeHTML(task.description || "ללא פרטים נוספים")}</p>
-
-                  <div style="margin-top:8px">
-                    <span class="badge ${task.status === "done" ? "badge-green" : task.status === "active" ? "badge-orange" : "badge-blue"}">
-                      ${statusText(task.status)}
-                    </span>
-                  </div>
+                  <p style="margin-top:7px"><b>${statusText(task.status)}</b></p>
 
                   ${isAdmin() ? `
                     <div class="task-actions">
-                      <button data-edit-task="${task.id}">עריכה</button>
-                      <button data-delete-task="${task.id}">מחיקה</button>
+                      <button data-edit="${task.id}">עריכה</button>
+                      <button data-delete="${task.id}">מחיקה</button>
                     </div>
                   ` : ""}
                 </div>
@@ -1543,126 +557,102 @@
             </div>
           </article>
         `).join("")
-        : `<div class="empty-state">לא נמצאו משימות מתאימות.</div>`;
+        : `<div class="empty">לא נמצאו משימות.</div>`;
     }
 
     function renderPersonal() {
-      const userName = data.currentUser.name.toLowerCase();
-
-      const tasks = data.tasks.filter(task =>
-        task.assignee.toLowerCase().includes(userName) ||
-        userName.includes(task.assignee.toLowerCase())
-      );
-
-      const completed = tasks.filter(task => task.status === "done").length;
-      const active = tasks.filter(task => task.status !== "done").length;
+      const myTasks = tasks.filter(task => task.assignee === currentUser.displayName);
+      const done = myTasks.filter(task => task.status === "done").length;
 
       $("#profileStats").innerHTML = `
         <div style="display:flex;justify-content:space-around">
-          <div>
-            <strong style="font-size:1.5rem">${tasks.length}</strong>
-            <small style="display:block;color:var(--muted)">סה״כ</small>
-          </div>
-          <div>
-            <strong style="font-size:1.5rem;color:var(--success)">${completed}</strong>
-            <small style="display:block;color:var(--muted)">הושלמו</small>
-          </div>
-          <div>
-            <strong style="font-size:1.5rem;color:var(--warning)">${active}</strong>
-            <small style="display:block;color:var(--muted)">פתוחות</small>
-          </div>
+          <div><b style="font-size:1.5rem">${myTasks.length}</b><small style="display:block;color:var(--muted)">סה״כ</small></div>
+          <div><b style="font-size:1.5rem;color:var(--success)">${done}</b><small style="display:block;color:var(--muted)">הושלמו</small></div>
+          <div><b style="font-size:1.5rem;color:var(--warning)">${myTasks.length - done}</b><small style="display:block;color:var(--muted)">פתוחות</small></div>
         </div>
       `;
 
-      $("#personalTasks").innerHTML = tasks.length
-        ? tasks.map(task => `
-          <div class="task-item">
-            <div class="task-main">
-              <div class="task-color" style="background:${colorValue(task.color)}"></div>
-              <div>
-                <strong>${escapeHTML(task.title)}</strong>
-                <small>שבוע ${task.week} · ${escapeHTML(task.category)}</small>
+      $("#personalTasks").innerHTML = myTasks.length
+        ? myTasks.map(task => `
+          <div class="item">
+            <div><strong>${escapeHTML(task.title)}</strong><small>שבוע ${task.week} · ${escapeHTML(task.category)}</small></div>
+            <span class="badge ${task.status === "done" ? "green" : "orange"}">${statusText(task.status)}</span>
+          </div>
+        `).join("")
+        : `<div class="empty">אין משימות המשויכות אליך.</div>`;
+    }
+
+    function renderMessages(messages) {
+      $("#messages").innerHTML = messages.length
+        ? messages.map(message => {
+          const mine = message.userId === currentUser.uid;
+          return `
+            <div class="message ${mine ? "mine" : ""}">
+              <div class="meta">
+                <b>${escapeHTML(message.userName)}</b>
+                <span>${formatDate(message.createdAt)}</span>
               </div>
+              <div class="body">${escapeHTML(message.text)}</div>
             </div>
-            <span class="badge ${task.status === "done" ? "badge-green" : "badge-orange"}">
-              ${statusText(task.status)}
-            </span>
-          </div>
-        `).join("")
-        : `<div class="empty-state">לא נמצאו משימות המשויכות אליך.</div>`;
+          `;
+        }).join("")
+        : `<div class="empty">אין הודעות.</div>`;
+
+      $("#messages").scrollTop = $("#messages").scrollHeight;
     }
 
-    function renderChat() {
-      const box = $("#chatMessages");
+    function renderUsers() {
+      if (!isAdmin()) return;
 
-      box.innerHTML = data.messages.map(message => {
-        const mine = message.author === data.currentUser.name;
-
-        return `
-          <div class="message ${mine ? "mine" : ""}">
-            <div class="message-meta">
-              <strong>${escapeHTML(message.author)}</strong>
-              <span>${formatDate(message.time)}</span>
-            </div>
-            <div class="message-body">${escapeHTML(message.text)}</div>
-          </div>
-        `;
-      }).join("");
-
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function renderPeople() {
-      const list = $("#peopleList");
-      if (!list) return;
-
-      list.innerHTML = data.people.length
-        ? data.people.map(person => `
-          <div class="activity-item">
+      $("#usersList").innerHTML = users.length
+        ? users.map(user => `
+          <div class="item">
             <div>
-              <strong>${escapeHTML(person.name)}</strong>
-              <small>${escapeHTML(person.email)}</small>
+              <strong>${escapeHTML(user.name || user.email)}</strong>
+              <small>${escapeHTML(user.email)}</small>
             </div>
-            <button class="btn btn-secondary" data-delete-person="${person.id}">
-              מחיקה
-            </button>
+            <span class="badge ${user.active ? "green" : "orange"}">
+              ${user.active ? "פעיל" : "ממתין לאישור"}
+            </span>
+            ${user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase() ? `
+              <button class="btn secondary" data-toggle-user="${user.id}">
+                ${user.active ? "השבת" : "אשר"}
+              </button>
+            ` : `<span class="badge purple">מנהל</span>`}
           </div>
         `).join("")
-        : `<div class="empty-state">אין חברי צוות.</div>`;
+        : `<div class="empty">אין משתמשים.</div>`;
     }
 
     function navigate(page) {
       if (page === "admin" && !isAdmin()) {
-        showToast("אין לך הרשאה לאזור הניהול");
+        toast("אין לך הרשאה לאזור הניהול");
         return;
       }
-
-      activePage = page;
 
       document.querySelectorAll(".page").forEach(section => {
         section.classList.toggle("active", section.id === `page-${page}`);
       });
 
-      document.querySelectorAll(".nav-item[data-page]").forEach(item => {
-        item.classList.toggle("active", item.dataset.page === page);
+      document.querySelectorAll(".nav button[data-page]").forEach(button => {
+        button.classList.toggle("active", button.dataset.page === page);
       });
 
-      const titles = {
+      const names = {
         dashboard: ["לוח בקרה", "סקירה כללית של הפעילות"],
-        schedule: ["לוח שבועות", "ניהול משימות, נושאים ואחראים"],
-        personal: ["האזור האישי", "המשימות והפרטים שלך"],
-        chat: ["צ'אט קבוצתי", "תקשורת מהירה עם חברי הצוות"],
-        assistant: ["עוזר חכם", "שאל שאלות על המערכת"],
-        admin: ["אזור ניהול", "ניהול משתמשים ונתונים"]
+        schedule: ["לוח שבועות", "ניהול משימות ונושאים"],
+        personal: ["האזור האישי", "המשימות שלך"],
+        chat: ["צ׳אט קבוצתי", "תקשורת עם חברי הצוות"],
+        admin: ["ממשק ניהול", "ניהול מלא של המערכת"]
       };
 
-      $("#pageTitle").textContent = titles[page][0];
-      $("#pageSubtitle").textContent = titles[page][1];
+      $("#pageTitle").textContent = names[page][0];
+      $("#pageSubtitle").textContent = names[page][1];
       $("#sidebar").classList.remove("open");
     }
 
     function openTaskModal(task = null) {
-      $("#modalBackdrop").classList.remove("hidden");
+      $("#modalBg").classList.remove("hidden");
       $("#modalTitle").textContent = task ? "עריכת משימה" : "משימה חדשה";
 
       $("#taskId").value = task?.id || "";
@@ -1671,286 +661,224 @@
       $("#taskTitle").value = task?.title || "";
       $("#taskAssignee").value = task?.assignee || "";
       $("#taskStatus").value = task?.status || "planned";
-      $("#taskColor").value = task?.color || "blue";
       $("#taskDescription").value = task?.description || "";
     }
 
     function closeTaskModal() {
-      $("#modalBackdrop").classList.add("hidden");
+      $("#modalBg").classList.add("hidden");
       $("#taskForm").reset();
     }
 
-    // Login
-    $("#loginForm").addEventListener("submit", event => {
-      event.preventDefault();
-
-      data.currentUser = {
-        name: $("#loginName").value.trim(),
-        email: $("#loginEmail").value.trim().toLowerCase()
-      };
-
-      saveData();
-      addActivity(`${data.currentUser.name} התחבר למערכת`);
-      renderApp();
-      showToast("התחברת בהצלחה");
+    // התחברות Google
+    $("#googleLogin").addEventListener("click", async () => {
+      try {
+        await auth.signInWithPopup(googleProvider);
+      } catch (error) {
+        console.error(error);
+        toast("ההתחברות נכשלה");
+      }
     });
 
-    $("#logoutBtn").addEventListener("click", () => {
-      data.currentUser = null;
-      saveData();
-      renderApp();
-    });
-
-    // Navigation
-    document.querySelectorAll(".nav-item[data-page]").forEach(button => {
-      button.addEventListener("click", () => navigate(button.dataset.page));
-    });
-
-    document.querySelectorAll("[data-go]").forEach(button => {
-      button.addEventListener("click", () => navigate(button.dataset.go));
-    });
-
-    $("#mobileMenuBtn").addEventListener("click", () => {
-      $("#sidebar").classList.toggle("open");
-    });
-
-    // Theme
-    $("#themeBtn").addEventListener("click", () => {
-      const dark = document.documentElement.dataset.theme === "dark";
-      document.documentElement.dataset.theme = dark ? "light" : "dark";
-      localStorage.setItem("team_theme", dark ? "light" : "dark");
-      $("#themeBtn").innerHTML = dark ? "<span>🌙</span> מצב כהה" : "<span>☀️</span> מצב בהיר";
-    });
-
-    const savedTheme = localStorage.getItem("team_theme");
-    if (savedTheme === "dark") {
-      document.documentElement.dataset.theme = "dark";
-      $("#themeBtn").innerHTML = "<span>☀️</span> מצב בהיר";
-    }
-
-    // Filters
-    ["searchInput", "categoryFilter", "statusFilter"].forEach(id => {
-      $("#" + id).addEventListener("input", renderSchedule);
-    });
-
-    $("#clearFiltersBtn").addEventListener("click", () => {
-      $("#searchInput").value = "";
-      $("#categoryFilter").value = "";
-      $("#statusFilter").value = "";
-      renderSchedule();
-    });
-
-    // Task modal
-    $("#addTaskBtn").addEventListener("click", () => {
-      if (!isAdmin()) {
-        showToast("רק מנהל יכול להוסיף משימות");
+    auth.onAuthStateChanged(async user => {
+      if (!user) {
+        showLogin();
         return;
       }
 
-      openTaskModal();
+      currentUser = user;
+
+      try {
+        await saveUser();
+
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        const profile = userDoc.data();
+
+        if (!isAdmin() && (!profile || profile.active !== true)) {
+          await auth.signOut();
+          alert("החשבון שלך ממתין לאישור מנהל.");
+          return;
+        }
+
+        showApp();
+      } catch (error) {
+        console.error(error);
+        toast("לא ניתן לטעון את פרופיל המשתמש");
+      }
     });
 
-    $("#closeModalBtn").addEventListener("click", closeTaskModal);
-    $("#cancelModalBtn").addEventListener("click", closeTaskModal);
-
-    $("#modalBackdrop").addEventListener("click", event => {
-      if (event.target === $("#modalBackdrop")) closeTaskModal();
+    // ניווט
+    document.querySelectorAll(".nav button[data-page]").forEach(button => {
+      button.addEventListener("click", () => navigate(button.dataset.page));
     });
 
-    $("#taskForm").addEventListener("submit", event => {
+    $("#mobileMenu").addEventListener("click", () => {
+      $("#sidebar").classList.toggle("open");
+    });
+
+    $("#logoutBtn").addEventListener("click", () => auth.signOut());
+
+    // מצב כהה
+    $("#themeBtn").addEventListener("click", () => {
+      const dark = document.documentElement.dataset.theme === "dark";
+      document.documentElement.dataset.theme = dark ? "light" : "dark";
+      localStorage.setItem("team-theme", dark ? "light" : "dark");
+      $("#themeBtn").textContent = dark ? "🌙 מצב כהה" : "☀️ מצב בהיר";
+    });
+
+    if (localStorage.getItem("team-theme") === "dark") {
+      document.documentElement.dataset.theme = "dark";
+      $("#themeBtn").textContent = "☀️ מצב בהיר";
+    }
+
+    // סינון
+    ["search", "category", "status"].forEach(id => {
+      $("#" + id).addEventListener("input", renderSchedule);
+    });
+
+    $("#clearFilters").addEventListener("click", () => {
+      $("#search").value = "";
+      $("#category").value = "";
+      $("#status").value = "";
+      renderSchedule();
+    });
+
+    // משימות
+    $("#newTask").addEventListener("click", () => {
+      if (isAdmin()) openTaskModal();
+    });
+
+    $("#closeModal").addEventListener("click", closeTaskModal);
+    $("#cancelModal").addEventListener("click", closeTaskModal);
+
+    $("#taskForm").addEventListener("submit", async event => {
       event.preventDefault();
 
-      const id = $("#taskId").value || "task_" + Date.now();
+      if (!isAdmin()) return;
 
+      const id = $("#taskId").value;
       const task = {
-        id,
         week: Number($("#taskWeek").value),
         category: $("#taskCategory").value,
         title: $("#taskTitle").value.trim(),
         assignee: $("#taskAssignee").value.trim(),
         status: $("#taskStatus").value,
-        color: $("#taskColor").value,
-        description: $("#taskDescription").value.trim()
+        description: $("#taskDescription").value.trim(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      const existingIndex = data.tasks.findIndex(item => item.id === id);
+      try {
+        if (id) {
+          await db.collection("tasks").doc(id).update(task);
+          toast("המשימה עודכנה");
+        } else {
+          task.createdBy = currentUser.uid;
+          task.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          await db.collection("tasks").add(task);
+          toast("המשימה נוספה");
+        }
 
-      if (existingIndex >= 0) {
-        data.tasks[existingIndex] = task;
-        addActivity(`המשימה "${task.title}" עודכנה`);
-        showToast("המשימה עודכנה");
-      } else {
-        data.tasks.push(task);
-        addActivity(`נוספה משימה חדשה: ${task.title}`);
-        showToast("המשימה נוספה");
+        closeTaskModal();
+      } catch (error) {
+        console.error(error);
+        toast("שמירת המשימה נכשלה");
       }
-
-      saveData();
-      closeTaskModal();
-      renderApp();
     });
 
-    document.addEventListener("click", event => {
-      const editButton = event.target.closest("[data-edit-task]");
-      const deleteButton = event.target.closest("[data-delete-task]");
-      const deletePersonButton = event.target.closest("[data-delete-person]");
+    document.addEventListener("click", async event => {
+      const edit = event.target.closest("[data-edit]");
+      const remove = event.target.closest("[data-delete]");
+      const toggle = event.target.closest("[data-toggle-user]");
 
-      if (editButton) {
-        const task = data.tasks.find(item => item.id === editButton.dataset.editTask);
+      if (edit) {
+        const task = tasks.find(item => item.id === edit.dataset.edit);
         if (task) openTaskModal(task);
       }
 
-      if (deleteButton) {
-        const task = data.tasks.find(item => item.id === deleteButton.dataset.deleteTask);
+      if (remove && isAdmin()) {
+        if (!confirm("למחוק את המשימה?")) return;
 
-        if (task && confirm(`למחוק את המשימה "${task.title}"?`)) {
-          data.tasks = data.tasks.filter(item => item.id !== task.id);
-          addActivity(`המשימה "${task.title}" נמחקה`);
-          saveData();
-          renderApp();
-          showToast("המשימה נמחקה");
+        try {
+          await db.collection("tasks").doc(remove.dataset.delete).delete();
+          toast("המשימה נמחקה");
+        } catch {
+          toast("מחיקת המשימה נכשלה");
         }
       }
 
-      if (deletePersonButton) {
-        const person = data.people.find(item => item.id === deletePersonButton.dataset.deletePerson);
+      if (toggle && isAdmin()) {
+        const user = users.find(item => item.id === toggle.dataset.toggleUser);
+        if (!user) return;
 
-        if (person && confirm(`למחוק את ${person.name}?`)) {
-          data.people = data.people.filter(item => item.id !== person.id);
-          saveData();
-          renderPeople();
-          showToast("חבר הצוות נמחק");
+        try {
+          await db.collection("users").doc(user.id).update({
+            active: !user.active,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          toast(user.active ? "המשתמש הושבת" : "המשתמש אושר");
+        } catch {
+          toast("עדכון המשתמש נכשל");
         }
       }
     });
 
-    // Chat
-    $("#chatForm").addEventListener("submit", event => {
+    // צ׳אט
+    $("#chatForm").addEventListener("submit", async event => {
       event.preventDefault();
 
-      const text = $("#chatInput").value.trim();
+      const input = $("#chatInput");
+      const text = input.value.trim();
       if (!text) return;
 
-      data.messages.push({
-        id: "message_" + Date.now(),
-        author: data.currentUser.name,
-        text,
-        time: new Date().toISOString()
-      });
+      try {
+        await db.collection("chatMessages").add({
+          userId: currentUser.uid,
+          userName: currentUser.displayName || currentUser.email,
+          text,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-      data.messages = data.messages.slice(-100);
-      addActivity(`${data.currentUser.name} שלח הודעה בצ'אט`);
-      saveData();
-      $("#chatInput").value = "";
-      renderApp();
-      navigate("chat");
-    });
-
-    // Assistant
-    $("#assistantForm").addEventListener("submit", event => {
-      event.preventDefault();
-
-      const input = $("#assistantInput");
-      const question = input.value.trim();
-      if (!question) return;
-
-      const box = $("#assistantMessages");
-
-      box.innerHTML += `
-        <div class="message mine">
-          <div class="message-meta"><strong>אני</strong><span>עכשיו</span></div>
-          <div class="message-body">${escapeHTML(question)}</div>
-        </div>
-      `;
-
-      const lower = question.toLowerCase();
-      let answer = "כרגע אני יכול לעזור בשאלות על שבועות, משימות ואחראים.";
-
-      if (lower.includes("כמה") && lower.includes("משימ")) {
-        answer = `יש כרגע ${data.tasks.length} משימות במערכת.`;
-      } else if (lower.includes("המשימה שלי") || lower.includes("המשימות שלי")) {
-        const mine = data.tasks.filter(task =>
-          task.assignee.toLowerCase().includes(data.currentUser.name.toLowerCase())
-        );
-
-        answer = mine.length
-          ? `מצאתי ${mine.length} משימות המשויכות אליך.`
-          : "לא מצאתי כרגע משימות המשויכות אליך.";
-      } else {
-        const weekMatch = question.match(/שבוע\\s*(\\d+)/);
-
-        if (weekMatch) {
-          const week = Number(weekMatch[1]);
-          const tasks = data.tasks.filter(task => task.week === week);
-
-          answer = tasks.length
-            ? `בשבוע ${week} יש: ${tasks.map(task => `${task.title} — ${task.assignee}`).join(", ")}.`
-            : `לא נמצאו משימות בשבוע ${week}.`;
-        }
+        input.value = "";
+      } catch {
+        toast("שליחת ההודעה נכשלה");
       }
-
-      setTimeout(() => {
-        box.innerHTML += `
-          <div class="message">
-            <div class="message-meta"><strong>עוזר חכם 🤖</strong><span>עכשיו</span></div>
-            <div class="message-body">${escapeHTML(answer)}</div>
-          </div>
-        `;
-
-        box.scrollTop = box.scrollHeight;
-      }, 300);
-
-      input.value = "";
-      box.scrollTop = box.scrollHeight;
     });
 
-    // People management
-    $("#personForm").addEventListener("submit", event => {
-      event.preventDefault();
+    // ייצוא נתונים למנהל
+    $("#exportData").addEventListener("click", () => {
+      if (!isAdmin()) return;
 
-      const name = $("#personName").value.trim();
-      const email = $("#personEmail").value.trim().toLowerCase();
-
-      data.people.push({
-        id: "person_" + Date.now(),
-        name,
-        email
-      });
-
-      addActivity(`נוסף חבר צוות: ${name}`);
-      saveData();
-      $("#personForm").reset();
-      renderPeople();
-      showToast("חבר הצוות נוסף");
-    });
-
-    // Export
-    $("#exportBtn").addEventListener("click", () => {
-      const blob = new Blob(
-        [JSON.stringify(data, null, 2)],
-        { type: "application/json" }
-      );
-
+      const content = JSON.stringify({ tasks, users }, null, 2);
+      const blob = new Blob([content], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
+
       link.href = url;
       link.download = "team-sync-backup.json";
       link.click();
+
       URL.revokeObjectURL(url);
-      showToast("הנתונים יוצאו בהצלחה");
+      toast("הנתונים יוצאו");
     });
 
-    // Reset
-    $("#resetBtn").addEventListener("click", () => {
-      if (!confirm("האם לאפס את כל נתוני ההדגמה?")) return;
+    $("#broadcast").addEventListener("click", async () => {
+      if (!isAdmin()) return;
 
-      data = structuredClone(defaultData);
-      saveData();
-      renderApp();
-      showToast("הנתונים אופסו");
+      const text = prompt("כתוב הודעה מערכתית:");
+      if (!text?.trim()) return;
+
+      try {
+        await db.collection("chatMessages").add({
+          userId: currentUser.uid,
+          userName: "מערכת",
+          text: text.trim(),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        toast("ההודעה נשלחה");
+      } catch {
+        toast("שליחת ההודעה נכשלה");
+      }
     });
-
-    renderApp();
   </script>
 </body>
 </html>
