@@ -6,81 +6,468 @@
   <meta name="theme-color" content="#2563eb">
   <title>סינכרון צוות</title>
   <style>
-    :root{--primary:#2563eb;--primary-dark:#1d4ed8;--bg:#f1f5f9;--surface:#fff;--soft:#eff6ff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--success:#059669;--danger:#dc2626;--shadow:0 12px 32px #0f172a14}
+    :root{
+      --primary:#2563eb;--primary-dark:#1d4ed8;--bg:#f1f5f9;--surface:#fff;--soft:#eff6ff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--success:#059669;--danger:#dc2626;--shadow:0 12px 32px #0f172a14
+    }
     [data-theme=dark]{--bg:#0f172a;--surface:#1e293b;--soft:#172554;--text:#f8fafc;--muted:#94a3b8;--border:#334155}
-    *{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh;background:var(--bg);color:var(--text);font-family:system-ui,"Segoe UI",Arial,sans-serif;line-height:1.6}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
-    .app{min-height:100vh;display:flex}.sidebar{position:fixed;inset:0 auto 0 0;width:260px;padding:20px;background:var(--surface);border-right:1px solid var(--border);z-index:20;display:flex;flex-direction:column}.brand{display:flex;align-items:center;gap:12px;padding:6px 8px 26px}.brand-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:22px}.brand small{display:block;color:var(--muted);font-size:.75rem}.nav{display:grid;gap:6px}.nav button{width:100%;display:flex;gap:10px;padding:12px 14px;border:0;border-radius:12px;background:transparent;color:var(--muted);text-align:right}.nav button:hover,.nav button.active{background:var(--soft);color:var(--primary);font-weight:700}.side-bottom{margin-top:auto;display:grid;gap:8px}.main{width:calc(100% - 260px);margin-right:260px;padding:24px}.topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:24px}.mobile-menu{display:none}.topbar h1{font-size:clamp(1.35rem,3vw,2rem)}.topbar p{color:var(--muted);font-size:.9rem}.page{display:none}.page.active{display:block}.card{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}.heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}.heading p{color:var(--muted)}.welcome{padding:28px;margin-bottom:20px;color:#fff;border-radius:18px;background:linear-gradient(135deg,#1d4ed8,#7c3aed)}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}.stat{display:flex;align-items:center;gap:13px}.stat-icon{font-size:23px}.stat strong{display:block;font-size:1.5rem}.stat span{color:var(--muted)}.dashboard{display:grid;grid-template-columns:1.25fr .75fr;gap:20px}.list{display:grid;gap:10px;margin-top:14px}.item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid var(--border);border-radius:13px;background:var(--surface)}.item small{display:block;color:var(--muted);font-size:.8rem}.badge{display:inline-flex;padding:4px 9px;border-radius:99px;font-size:.74rem;font-weight:700;white-space:nowrap}.blue{background:#dbeafe;color:#1d4ed8}.green{background:#d1fae5;color:#047857}.orange{background:#fef3c7;color:#b45309}.btn{border:0;border-radius:10px;padding:10px 15px;font-weight:700}.primary{background:var(--primary);color:#fff}.secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}.danger{background:var(--danger);color:#fff}.filters{display:grid;grid-template-columns:1fr 180px auto;gap:10px;margin-bottom:18px}.input,.select{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);outline:0}.weeks{display:grid;gap:14px}.week{overflow:hidden;border:1px solid var(--border);border-radius:16px;background:var(--surface)}.week-head{display:flex;justify-content:space-between;padding:15px 18px;background:var(--soft)}.tasks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:16px}.task{padding:15px;border:1px solid var(--border);border-radius:13px}.task h3{margin:8px 0 3px}.task p{color:var(--muted);font-size:.86rem}.task-actions{display:flex;gap:7px;margin-top:12px}.modal-bg{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;background:#0f172a99}.modal{width:min(580px,100%);padding:22px;border-radius:22px;background:var(--surface)}.modal-head{display:flex;justify-content:space-between;margin-bottom:16px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.group{display:grid;gap:6px}.group.full{grid-column:1/-1}.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:14px}.chat{min-height:500px;display:flex;flex-direction:column}.messages{flex:1;min-height:350px;max-height:560px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:8px 2px 18px}.message{max-width:75%;padding:11px 13px;border-radius:14px;background:var(--soft);border:1px solid var(--border)}.message.mine{margin-left:auto;background:#dbeafe}.message small{display:block;color:var(--muted)}.chat-form{display:flex;gap:10px}.avatar{width:82px;height:82px;display:grid;place-items:center;margin:auto auto 12px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:2rem;font-weight:700}.profile{text-align:center}
-    @media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}.dashboard{grid-template-columns:1fr}}@media(max-width:800px){.sidebar{transform:translateX(110%);transition:.25s}.sidebar.open{transform:translateX(0)}.main{width:100%;margin:0;padding:16px}.mobile-menu{display:grid}.filters{grid-template-columns:1fr 1fr}.filters .input{grid-column:1/-1}.form-grid{grid-template-columns:1fr}.group.full{grid-column:auto}}@media(max-width:520px){.stats{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.filters .input{grid-column:auto}.chat-form{flex-direction:column}.message{max-width:90%}.heading{align-items:flex-start;flex-direction:column}}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{min-height:100vh;background:var(--bg);color:var(--text);font-family:system-ui,"Segoe UI",Arial,sans-serif;line-height:1.6}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .hidden{display:none!important}
+    .app{min-height:100vh;display:flex}
+    .sidebar{position:fixed;inset:0 auto 0 0;width:260px;padding:20px;background:var(--surface);border-right:1px solid var(--border);z-index:20;display:flex;flex-direction:column}
+    .brand{display:flex;align-items:center;gap:12px;padding:6px 8px 26px}
+    .brand-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:22px}
+    .brand small{display:block;color:var(--muted);font-size:.75rem}
+    .nav{display:grid;gap:6px}
+    .nav button{width:100%;display:flex;gap:10px;padding:12px 14px;border:0;border-radius:12px;background:transparent;color:var(--muted);text-align:right}
+    .nav button:hover,.nav button.active{background:var(--soft);color:var(--primary);font-weight:700}
+    .side-bottom{margin-top:auto;display:grid;gap:8px}
+    .main{width:calc(100% - 260px);margin-right:260px;padding:24px}
+    .topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:24px}
+    .mobile-menu{display:none}
+    .topbar h1{font-size:clamp(1.35rem,3vw,2rem)}
+    .topbar p{color:var(--muted);font-size:.9rem}
+    .page{display:none}
+    .page.active{display:block}
+    .card{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
+    .heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+    .heading p{color:var(--muted)}
+    .welcome{padding:28px;margin-bottom:20px;color:#fff;border-radius:18px;background:linear-gradient(135deg,#1d4ed8,#7c3aed)}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+    .stat{display:flex;align-items:center;gap:13px}
+    .stat-icon{font-size:23px}
+    .stat strong{display:block;font-size:1.5rem}
+    .stat span{color:var(--muted)}
+    .dashboard{display:grid;grid-template-columns:1.25fr .75fr;gap:20px}
+    .list{display:grid;gap:10px;margin-top:14px}
+    .item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid var(--border);border-radius:13px;background:var(--surface)}
+    .item small{display:block;color:var(--muted);font-size:.8rem}
+    .badge{display:inline-flex;padding:4px 9px;border-radius:99px;font-size:.74rem;font-weight:700;white-space:nowrap}
+    .blue{background:#dbeafe;color:#1d4ed8}.green{background:#d1fae5;color:#047857}.orange{background:#fef3c7;color:#b45309}
+    .btn{border:0;border-radius:10px;padding:10px 15px;font-weight:700}
+    .primary{background:var(--primary);color:#fff}
+    .secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+    .danger{background:var(--danger);color:#fff}
+    .filters{display:grid;grid-template-columns:1fr 180px auto;gap:10px;margin-bottom:18px}
+    .input,.select{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);outline:0}
+    .weeks{display:grid;gap:14px}
+    .week{overflow:hidden;border:1px solid var(--border);border-radius:16px;background:var(--surface)}
+    .week-head{display:flex;justify-content:space-between;padding:15px 18px;background:var(--soft)}
+    .tasks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:16px}
+    .task{padding:15px;border:1px solid var(--border);border-radius:13px}
+    .task h3{margin:8px 0 3px}
+    .task p{color:var(--muted);font-size:.86rem}
+    .task-actions{display:flex;gap:7px;margin-top:12px}
+    .modal-bg{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;background:#0f172a99}
+    .modal{width:min(580px,100%);padding:22px;border-radius:22px;background:var(--surface)}
+    .modal-head{display:flex;justify-content:space-between;margin-bottom:16px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .group{display:grid;gap:6px}
+    .group.full{grid-column:1/-1}
+    .empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:14px}
+    .chat{min-height:500px;display:flex;flex-direction:column}
+    .messages{flex:1;min-height:350px;max-height:560px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:8px 2px 18px}
+    .message{max-width:75%;padding:11px 13px;border-radius:14px;background:var(--soft);border:1px solid var(--border)}
+    .message.mine{margin-left:auto;background:#dbeafe}
+    .message small{display:block;color:var(--muted)}
+    .chat-form{display:flex;gap:10px}
+    .avatar{width:82px;height:82px;display:grid;place-items:center;margin:auto auto 12px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:2rem;font-weight:700}
+    .profile{text-align:center}
+    @media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}.dashboard{grid-template-columns:1fr}}
+    @media(max-width:800px){
+      .sidebar{transform:translateX(110%);transition:.25s}
+      .sidebar.open{transform:translateX(0)}
+      .main{width:100%;margin:0;padding:16px}
+      .mobile-menu{display:grid}
+      .filters{grid-template-columns:1fr 1fr}
+      .filters .input{grid-column:1/-1}
+      .form-grid{grid-template-columns:1fr}
+      .group.full{grid-column:auto}
+    }
+    @media(max-width:520px){
+      .stats{grid-template-columns:1fr}
+      .filters{grid-template-columns:1fr}
+      .filters .input{grid-column:auto}
+      .chat-form{flex-direction:column}
+      .message{max-width:90%}
+      .heading{align-items:flex-start;flex-direction:column}
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <aside id="sidebar" class="sidebar">
-      <div class="brand"><div class="brand-icon">✦</div><div><strong>סינכרון צוות</strong><small>ניהול חכם ופשוט</small></div></div>
-      <nav class="nav">
-        <button class="active" data-page="dashboard">📊 לוח בקרה</button>
-        <button data-page="schedule">📅 משימות</button>
-        <button data-page="personal">👤 אזור אישי</button>
-        <button data-page="chat">💬 צ׳אט</button>
+  <div class=\"app\">
+    <aside id=\"sidebar\" class=\"sidebar\">
+      <div class=\"brand\">
+        <div class=\"brand-icon\">✦</div>
+        <div>
+          <strong>סינכרון צוות</strong>
+          <small>ניהול חכם ופשוט</small>
+        </div>
+      </div>
+
+      <nav class=\"nav\">
+        <button class=\"active\" data-page=\"dashboard\">📊 לוח בקרה</button>
+        <button data-page=\"schedule\">📅 משימות</button>
+        <button data-page=\"personal\">👤 אזור אישי</button>
+        <button data-page=\"chat\">💬 צ׳אט</button>
       </nav>
-      <div class="side-bottom"><button id="themeBtn" class="nav">🌙 מצב כהה</button></div>
+
+      <div class=\"side-bottom\">
+        <button id=\"themeBtn\" class=\"nav\">🌙 מצב כהה</button>
+      </div>
     </aside>
 
-    <main class="main">
-      <header class="topbar"><div style="display:flex;align-items:center;gap:12px"><button id="mobileMenu" class="btn secondary mobile-menu">☰</button><div><h1 id="pageTitle">לוח בקרה</h1><p id="pageSubtitle">סקירה כללית של הפעילות</p></div></div><span class="badge blue">מצב מקומי</span></header>
+    <main class=\"main\">
+      <header class=\"topbar\">
+        <div style=\"display:flex;align-items:center;gap:12px\">
+          <button id=\"mobileMenu\" class=\"btn secondary mobile-menu\">☰</button>
+          <div>
+            <h1 id=\"pageTitle\">לוח בקרה</h1>
+            <p id=\"pageSubtitle\">סקירה כללית של הפעילות</p>
+          </div>
+        </div>
+        <span class=\"badge blue\">מצב מקומי</span>
+      </header>
 
-      <section id="page-dashboard" class="page active">
-        <div class="welcome"><h2>שלום 👋</h2><p>המערכת פועלת ללא התחברות Google. הנתונים נשמרים בדפדפן הזה.</p></div>
-        <div class="stats"><div class="card stat"><div class="stat-icon">✅</div><div><strong id="statTasks">0</strong><span>משימות</span></div></div><div class="card stat"><div class="stat-icon">💬</div><div><strong id="statMessages">0</strong><span>הודעות</span></div></div><div class="card stat"><div class="stat-icon">📅</div><div><strong id="statWeeks">0</strong><span>שבועות</span></div></div></div>
-        <div class="dashboard"><div class="card"><h2>משימות קרובות</h2><div id="upcoming" class="list"></div></div><div class="card"><h2>פעילות</h2><div id="myActivity" class="list"><div class="empty">הנתונים נשמרים מקומית.</div></div></div></div>
+      <section id=\"page-dashboard\" class=\"page active\">
+        <div class=\"welcome\">
+          <h2>שלום 👋</h2>
+          <p>המערכת פועלת ללא התחברות Google. הנתונים נשמרים בדפדפן הזה.</p>
+        </div>
+
+        <div class=\"stats\">
+          <div class=\"card stat\">
+            <div class=\"stat-icon\">✅</div>
+            <div><strong id=\"statTasks\">0</strong><span>משימות</span></div>
+          </div>
+          <div class=\"card stat\">
+            <div class=\"stat-icon\">💬</div>
+            <div><strong id=\"statMessages\">0</strong><span>הודעות</span></div>
+          </div>
+          <div class=\"card stat\">
+            <div class=\"stat-icon\">📅</div>
+            <div><strong id=\"statWeeks\">0</strong><span>שבועות</span></div>
+          </div>
+        </div>
+
+        <div class=\"dashboard\">
+          <div class=\"card\">
+            <h2>משימות קרובות</h2>
+            <div id=\"upcoming\" class=\"list\"></div>
+          </div>
+          <div class=\"card\">
+            <h2>פעילות</h2>
+            <div id=\"myActivity\" class=\"list\"><div class=\"empty\">הנתונים נשמרים מקומית.</div></div>
+          </div>
+        </div>
       </section>
 
-      <section id="page-schedule" class="page"><div class="heading"><div><h1>משימות</h1><p>ניהול משימות מקומי</p></div><button id="newTask" class="btn primary">＋ משימה חדשה</button></div><div class="filters"><input id="search" class="input" placeholder="חיפוש משימה או אחראי"><select id="status" class="select"><option value="">כל הסטטוסים</option><option value="planned">מתוכנן</option><option value="active">פעיל</option><option value="done">הושלם</option></select><button id="clearFilters" class="btn secondary">נקה</button></div><div id="weeks" class="weeks"></div></section>
+      <section id=\"page-schedule\" class=\"page\">
+        <div class=\"heading\">
+          <div><h1>משימות</h1><p>ניהול משימות מקומי</p></div>
+          <button id=\"newTask\" class=\"btn primary\">＋ משימה חדשה</button>
+        </div>
 
-      <section id="page-personal" class="page"><div class="heading"><div><h1>האזור האישי</h1><p>פרטי המשתמש המקומי</p></div></div><div class="card profile"><div class="avatar">מ</div><h2>משתמש מקומי</h2><p style="color:var(--muted)">אין צורך בחשבון או בהתחברות</p></div></section>
+        <div class=\"filters\">
+          <input id=\"search\" class=\"input\" placeholder=\"חיפוש משימה או אחראי\">
+          <select id=\"status\" class=\"select\">
+            <option value=\"\">כל הסטטוסים</option>
+            <option value=\"planned\">מתוכנן</option>
+            <option value=\"active\">פעיל</option>
+            <option value=\"done\">הושלם</option>
+          </select>
+          <button id=\"clearFilters\" class=\"btn secondary\">נקה</button>
+        </div>
 
-      <section id="page-chat" class="page"><div class="heading"><div><h1>צ׳אט</h1><p>הודעות מקומיות בדפדפן הזה</p></div></div><div class="card chat"><div id="messages" class="messages"></div><form id="chatForm" class="chat-form"><input id="chatInput" class="input" maxlength="500" placeholder="כתוב הודעה"><button class="btn primary">שלח</button></form></div></section>
+        <div id=\"weeks\" class=\"weeks\"></div>
+      </section>
+
+      <section id=\"page-personal\" class=\"page\">
+        <div class=\"heading\">
+          <div><h1>האזור האישי</h1><p>פרטי המשתמש המקומי</p></div>
+        </div>
+
+        <div class=\"card profile\">
+          <div class=\"avatar\">מ</div>
+          <h2>משתמש מקומי</h2>
+          <p style=\"color:var(--muted)\">אין צורך בחשבון או בהתחברות</p>
+        </div>
+      </section>
+
+      <section id=\"page-chat\" class=\"page\">
+        <div class=\"heading\">
+          <div><h1>צ׳אט</h1><p>הודעות מקומיות בדפדפן הזה</p></div>
+        </div>
+
+        <div class=\"card chat\">
+          <div id=\"messages\" class=\"messages\"></div>
+          <form id=\"chatForm\" class=\"chat-form\">
+            <input id=\"chatInput\" class=\"input\" maxlength=\"500\" placeholder=\"כתוב הודעה\">
+            <button class=\"btn primary\">שלח</button>
+          </form>
+        </div>
+      </section>
     </main>
   </div>
 
-  <div id="modalBg" class="modal-bg hidden"><div class="modal"><div class="modal-head"><h2>משימה חד��ה</h2><button id="closeModal" class="btn secondary">✕</button></div><form id="taskForm" class="form-grid"><div class="group"><label>מספר שבוע</label><input id="taskWeek" class="input" type="number" min="1" required></div><div class="group"><label>כותרת</label><input id="taskTitle" class="input" required></div><div class="group"><label>אחראי</label><input id="taskAssignee" class="input" required></div><div class="group"><label>סטטוס</label><select id="taskStatus" class="select"><option value="planned">מתוכנן</option><option value="active">פעיל</option><option value="done">הושלם</option></select></div><div class="group full"><label>פרטים</label><input id="taskDescription" class="input"></div><div class="group full" style="display:flex;justify-content:flex-end;gap:8px"><button type="button" id="cancelModal" class="btn secondary">ביטול</button><button class="btn primary">שמירה</button></div></form></div></div>
+  <div id=\"modalBg\" class=\"modal-bg hidden\">
+    <div class=\"modal\">
+      <div class=\"modal-head\">
+        <h2>משימה חדשה</h2>
+        <button id=\"closeModal\" class=\"btn secondary\">✕</button>
+      </div>
+
+      <form id=\"taskForm\" class=\"form-grid\">
+        <div class=\"group\">
+          <label>מספר שבוע</label>
+          <input id=\"taskWeek\" class=\"input\" type=\"number\" min=\"1\" required>
+        </div>
+
+        <div class=\"group\">
+          <label>כותרת</label>
+          <input id=\"taskTitle\" class=\"input\" required>
+        </div>
+
+        <div class=\"group\">
+          <label>אחראי</label>
+          <input id=\"taskAssignee\" class=\"input\" required>
+        </div>
+
+        <div class=\"group\">
+          <label>סטטוס</label>
+          <select id=\"taskStatus\" class=\"select\">
+            <option value=\"planned\">מתוכנן</option>
+            <option value=\"active\">פעיל</option>
+            <option value=\"done\">הושלם</option>
+          </select>
+        </div>
+
+        <div class=\"group full\">
+          <label>פרטים</label>
+          <input id=\"taskDescription\" class=\"input\">
+        </div>
+
+        <div class=\"group full\" style=\"display:flex;justify-content:flex-end;gap:8px\">
+          <button type=\"button\" id=\"cancelModal\" class=\"btn secondary\">ביטול</button>
+          <button class=\"btn primary\">שמירה</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script>
     "use strict";
+
     const $ = selector => document.querySelector(selector);
-    const load = (key, fallback) => JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+    const load = (key, fallback) => {
+      try {
+        return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+      } catch {
+        return fallback;
+      }
+    };
+
     let tasks = load("team-sync-tasks", []);
     let messages = load("team-sync-messages", []);
-    const save = () => { localStorage.setItem("team-sync-tasks", JSON.stringify(tasks)); localStorage.setItem("team-sync-messages", JSON.stringify(messages)); };
-    const escapeHTML = value => String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-    const statusText = status => ({planned:"מתוכנן",active:"פעיל",done:"הושלם"}[status] || status);
+
+    const save = () => {
+      localStorage.setItem("team-sync-tasks", JSON.stringify(tasks));
+      localStorage.setItem("team-sync-messages", JSON.stringify(messages));
+    };
+
+    const escapeHTML = value => String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+    const statusText = status => ({ planned: "מתוכנן", active: "פעיל", done: "הושלם" }[status] || status);
     const statusClass = status => status === "done" ? "green" : status === "active" ? "blue" : "orange";
 
     function render() {
       const query = ($("#search")?.value || "").trim().toLowerCase();
       const status = $("#status")?.value || "";
-      const filtered = tasks.filter(task => (!query || `${task.title} ${task.assignee} ${task.description}`.toLowerCase().includes(query)) && (!status || task.status === status));
+
+      const filtered = tasks.filter(task => {
+        const haystack = `${task.title} ${task.assignee} ${task.description}`.toLowerCase();
+        return (!query || haystack.includes(query)) && (!status || task.status === status);
+      });
+
       const groups = {};
-      filtered.forEach(task => (groups[task.week] ||= []).push(task));
-      const weeks = Object.keys(groups).sort((a,b) => Number(a)-Number(b));
-      $("#weeks").innerHTML = weeks.length ? weeks.map(week => `<article class="week"><div class="week-head"><h3>שבוע ${escapeHTML(week)}</h3><span class="badge blue">${groups[week].length} משימות</span></div><div class="tasks">${groups[week].map((task,index) => `<div class="task"><span class="badge ${statusClass(task.status)}">${statusText(task.status)}</span><h3>${escapeHTML(task.title)}</h3><p>👤 ${escapeHTML(task.assignee)}</p><p>${escapeHTML(task.description || "ללא פרטים נוספים")}</p><div class="task-actions"><button class="btn secondary" data-delete="${task.id}">מחיקה</button></div></div>`).join("")}</div></article>`).join("") : `<div class="empty">לא נמצאו משימות.</div>`;
-      const upcoming = tasks.filter(task => task.status !== "done").sort((a,b) => Number(a.week)-Number(b.week)).slice(0,5);
-      $("#upcoming").innerHTML = upcoming.length ? upcoming.map(task => `<div class="item"><div><strong>${escapeHTML(task.title)}</strong><small>שבוע ${escapeHTML(task.week)} · ${escapeHTML(task.assignee)}</small></div><span class="badge ${statusClass(task.status)}">${statusText(task.status)}</span></div>`).join("") : `<div class="empty">אין משימות.</div>`;
-      $("#statTasks").textContent = tasks.length; $("#statMessages").textContent = messages.length; $("#statWeeks").textContent = new Set(tasks.map(task => task.week)).size;
-      $("#messages").innerHTML = messages.length ? messages.map(message => `<div class="message mine"><small>${escapeHTML(message.time)}</small>${escapeHTML(message.text)}</div>`).join("") : `<div class="empty">אין הודעות.</div>`;
+      filtered.forEach(task => {
+        groups[task.week] ||= [];
+        groups[task.week].push(task);
+      });
+
+      const weeks = Object.keys(groups).sort((a, b) => Number(a) - Number(b));
+      $("#weeks").innerHTML = weeks.length
+        ? weeks.map(week => `
+            <article class="week">
+              <div class="week-head">
+                <h3>שבוע ${escapeHTML(week)}</h3>
+                <span class="badge blue">${groups[week].length} משימות</span>
+              </div>
+              <div class="tasks">
+                ${groups[week].map(task => `
+                  <div class="task">
+                    <span class="badge ${statusClass(task.status)}">${statusText(task.status)}</span>
+                    <h3>${escapeHTML(task.title)}</h3>
+                    <p>👤 ${escapeHTML(task.assignee)}</p>
+                    <p>${escapeHTML(task.description || "ללא פרטים נוספים")}</p>
+                    <div class="task-actions">
+                      <button class="btn secondary" data-delete="${task.id}">מחיקה</button>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            </article>
+          `).join("")
+        : `<div class="empty">לא נמצאו משימות.</div>`;
+
+      const upcoming = tasks.filter(task => task.status !== "done").sort((a, b) => Number(a.week) - Number(b.week)).slice(0, 5);
+      $("#upcoming").innerHTML = upcoming.length
+        ? upcoming.map(task => `
+            <div class="item">
+              <div>
+                <strong>${escapeHTML(task.title)}</strong>
+                <small>שבוע ${escapeHTML(task.week)} · ${escapeHTML(task.assignee)}</small>
+              </div>
+              <span class="badge ${statusClass(task.status)}">${statusText(task.status)}</span>
+            </div>
+          `).join("")
+        : `<div class=\"empty\">אין משימות.</div>`;
+
+      $("#statTasks").textContent = tasks.length;
+      $("#statMessages").textContent = messages.length;
+      $("#statWeeks").textContent = new Set(tasks.map(task => task.week)).size;
+
+      $("#messages").innerHTML = messages.length
+        ? messages.map(message => `
+            <div class="message ${message.mine ? "mine" : ""}">
+              <small>${escapeHTML(message.time)}</small>
+              ${escapeHTML(message.text)}
+            </div>
+          `).join("")
+        : `<div class="empty">אין הודעות.</div>`;
     }
 
-    function navigate(page) { document.querySelectorAll(".page").forEach(section => section.classList.toggle("active", section.id === `page-${page}`)); document.querySelectorAll(".nav button[data-page]").forEach(button => button.classList.toggle("active", button.dataset.page === page)); const names={dashboard:["לוח בקרה","סקירה כללית של הפעילות"],schedule:["משימות","ניהול משימות מקומי"],personal:["האזור האישי","פרטי המשתמש המקומי"],chat:["צ׳אט","הודעות מקומיות"]}; $("#pageTitle").textContent=names[page][0]; $("#pageSubtitle").textContent=names[page][1]; $("#sidebar").classList.remove("open"); }
-    document.querySelectorAll(".nav button[data-page]").forEach(button => button.addEventListener("click", () => navigate(button.dataset.page)));
-    $("#mobileMenu").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
-    $("#newTask").addEventListener("click", () => $("#modalBg").classList.remove("hidden"));
-    $("#closeModal").addEventListener("click", () => $("#modalBg").classList.add("hidden"));
-    $("#cancelModal").addEventListener("click", () => $("#modalBg").classList.add("hidden"));
-    $("#taskForm").addEventListener("submit", event => { event.preventDefault(); tasks.push({id:crypto.randomUUID(),week:Number($("#taskWeek").value),title:$("#taskTitle").value.trim(),assignee:$("#taskAssignee").value.trim(),status:$("#taskStatus").value,description:$("#taskDescription").value.trim()}); save(); event.target.reset(); $("#modalBg").classList.add("hidden"); render(); });
-    document.addEventListener("click", event => { const button=event.target.closest("[data-delete]"); if(button){tasks=tasks.filter(task=>task.id!==button.dataset.delete);save();render();} });
-    $("#chatForm").addEventListener("submit", event => { event.preventDefault(); const input=$("#chatInput"); const text=input.value.trim(); if(!text)return; messages.push({text,time:new Date().toLocaleString("he-IL")}); input.value=""; save(); render(); });
-    ["search","status"].forEach(id => $("#"+id).addEventListener("input", render)); $("#clearFilters").addEventListener("click",()=>{$("#search").value="";$("#status").value="";render();});
-    $("#themeBtn").addEventListener("click",()=>{const dark=document.documentElement.dataset.theme==="dark";document.documentElement.dataset.theme=dark?"light":"dark";localStorage.setItem("team-theme",dark?"light":"dark");}); if(localStorage.getItem("team-theme")==="dark")document.documentElement.dataset.theme="dark";
+    function navigate(page) {
+      document.querySelectorAll(".page").forEach(section => {
+        section.classList.toggle("active", section.id === `page-${page}`);
+      });
+
+      document.querySelectorAll(".nav button[data-page]").forEach(button => {
+        button.classList.toggle("active", button.dataset.page === page);
+      });
+
+      const names = {
+        dashboard: ["לוח בקרה", "סקירה כללית של הפעילות"],
+        schedule: ["משימות", "ניהול משימות מקומי"],
+        personal: ["האזור האישי", "פרטי המשתמש המקומי"],
+        chat: ["צ׳אט", "הודעות מקומיות"]
+      };
+
+      $("#pageTitle").textContent = names[page][0];
+      $("#pageSubtitle").textContent = names[page][1];
+      $("#sidebar").classList.remove("open");
+    }
+
+    document.querySelectorAll(".nav button[data-page]").forEach(button => {
+      button.addEventListener("click", () => navigate(button.dataset.page));
+    });
+
+    $("#mobileMenu").addEventListener("click", () => {
+      $("#sidebar").classList.toggle("open");
+    });
+
+    $("#newTask").addEventListener("click", () => {
+      $("#modalBg").classList.remove("hidden");
+    });
+
+    $("#closeModal").addEventListener("click", () => {
+      $("#modalBg").classList.add("hidden");
+    });
+
+    $("#cancelModal").addEventListener("click", () => {
+      $("#modalBg").classList.add("hidden");
+    });
+
+    $("#taskForm").addEventListener("submit", event => {
+      event.preventDefault();
+
+      const week = Number($("#taskWeek").value);
+      const title = $("#taskTitle").value.trim();
+      const assignee = $("#taskAssignee").value.trim();
+      const status = $("#taskStatus").value;
+      const description = $("#taskDescription").value.trim();
+
+      if (!week || !title || !assignee) return;
+
+      tasks.push({
+        id: crypto.randomUUID(),
+        week,
+        title,
+        assignee,
+        status,
+        description
+      });
+
+      save();
+      event.target.reset();
+      $("#modalBg").classList.add("hidden");
+      render();
+    });
+
+    document.addEventListener("click", event => {
+      const removeButton = event.target.closest("[data-delete]");
+      if (!removeButton) return;
+
+      tasks = tasks.filter(task => task.id !== removeButton.dataset.delete);
+      save();
+      render();
+    });
+
+    $("#chatForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const input = $("#chatInput");
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      messages.push({
+        text,
+        time: new Date().toLocaleString("he-IL"),
+        mine: true
+      });
+
+      input.value = "";
+      save();
+      render();
+    });
+
+    ["search", "status"].forEach(id => {
+      $("#" + id).addEventListener("input", render);
+    });
+
+    $("#clearFilters").addEventListener("click", () => {
+      $("#search").value = "";
+      $("#status").value = "";
+      render();
+    });
+
+    $("#themeBtn").addEventListener("click", () => {
+      const dark = document.documentElement.dataset.theme === "dark";
+      document.documentElement.dataset.theme = dark ? "light" : "dark";
+      localStorage.setItem("team-theme", dark ? "light" : "dark");
+    });
+
+    if (localStorage.getItem("team-theme") === "dark") {
+      document.documentElement.dataset.theme = "dark";
+    }
+
     render();
   </script>
 </body>
