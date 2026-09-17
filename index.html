@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>סינכרון | מרכז קבוצתי פלאגשיפ</title>
+<title>סינכרון | פלאגשיפ מרכז קבוצה</title>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -44,8 +44,8 @@ body::before {
 }
 
 .container { width: 100%; max-width: 900px; margin: 0 auto; position:relative; }
+.hidden { display: none !important; }
 
-/* ======== Dynamic Island ======== */
 .dynamic-island-wrapper {
   position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 8000;
   display: flex; justify-content: center; width: 100%; pointer-events: none;
@@ -69,10 +69,6 @@ body::before {
 .google-login-btn{ width:100%;border:1px solid var(--border-subtle);border-radius:16px;height:54px;background:#fff;color:#0f172a;font-weight:800;font-size:1rem;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:0.25s;box-shadow:0 8px 20px rgba(0,0,0,0.04); }
 .google-login-btn:hover{background:var(--primary-light);border-color:var(--primary);color:var(--primary);transform:translateY(-2px);}
 
-#mainApp, #adminApp { display: none; width: 100%; }
-.hidden { display: none !important; }
-
-/* סרגל עליון צף ומקובע */
 .nav-bar { 
   position: fixed; top: 12px; left: 12px; right: 12px; z-index: 1000;
   display: flex; justify-content: space-between; align-items: center; 
@@ -88,15 +84,12 @@ body::before {
 header { text-align: center; margin-bottom: 24px; background: linear-gradient(135deg, #1e40af, #2563eb); color: #fff; padding: 28px 18px; border-radius: 24px; box-shadow: 0 15px 35px rgba(37, 99, 235, 0.2); width: 100%; border: 1px solid rgba(255,255,255,0.2); }
 header h1 { font-size: clamp(1.4rem, 3vw, 2.2rem); margin-bottom: 6px; font-weight: 900; }
 header p { font-size: 0.95rem; opacity: 0.9; }
-.current-week-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); padding: 6px 16px; border-radius: 999px; font-size: 0.9rem; margin-top: 12px; backdrop-filter: blur(10px); }
 
+.current-week-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); padding: 6px 16px; border-radius: 999px; font-size: 0.9rem; margin-top: 12px; backdrop-filter: blur(10px); }
 .view-tabs { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; width: 100%; }
 .view-tab { padding: 10px 18px; border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--card); backdrop-filter: blur(15px); color: var(--primary-dark); font-weight: 700; cursor: pointer; transition: 0.2s; }
 .view-tab:hover { border-color: var(--primary); }
 .view-tab.active { background: var(--primary); color: #fff; border-color: transparent; box-shadow: 0 6px 20px var(--cyber-glow); }
-
-.toolbar { display: flex; justify-content: center; margin-bottom: 16px; width: 100%; }
-.toolbar input { width: min(340px, 100%); padding: 12px 18px; border-radius: 16px; border: 1px solid var(--border-subtle); background: rgba(255,255,255,0.9); font-size: 0.95rem; outline: none; }
 
 .weeks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-bottom: 20px; width: 100%; }
 .week-btn { background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 14px 6px; text-align: center; font-size: 0.95rem; font-weight: 800; color: var(--primary); cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
@@ -107,13 +100,11 @@ header p { font-size: 0.95rem; opacity: 0.9; }
 .person-card h3, .category-section h3 { font-size: 1.2rem; color: var(--primary-dark); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid rgba(203,213,225,0.4); }
 .person-card li, .category-section li { padding: 12px; border-radius: 12px; border-inline-start: 4px solid var(--primary); background: rgba(255,255,255,0.8); margin-bottom: 8px; list-style:none; border: 1px solid var(--border-subtle); display:flex; flex-direction:column; gap:6px;}
 
-/* אזור אישי סייבר */
 .cyber-card { background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(240,246,252,0.8)); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 24px; padding: 26px; box-shadow: var(--glass-shadow); position: relative; overflow: hidden; width: 100%; margin-bottom:20px; }
 .cyber-card::before { content:'';position:absolute;top:0;left:0;right:0;height:4px; background:linear-gradient(90deg, #2563eb, #0ea5e9, #10b981); }
 .cyber-timer-box { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 16px; padding: 20px; text-align: center; margin-top: 16px; box-shadow: inset 0 2px 6px rgba(14, 165, 233, 0.05); }
 .time-num { font-size: 1.8rem; font-weight: 900; color: var(--primary); margin: 8px 0; }
 
-/* צ'אט ו־AI חכם */
 .chat-container { background: var(--card); backdrop-filter: blur(25px); border-radius: 24px; padding: 16px; border: 1px solid var(--border-subtle); height: 500px; display: flex; flex-direction: column; width: 100%; box-shadow: var(--glass-shadow); }
 .chat-list { flex: 1; overflow-y: auto; padding: 6px 0; display: flex; flex-direction: column; gap: 14px; padding-bottom:20px; }
 .msg { max-width: 85%; padding: 12px 16px; background: rgba(255,255,255,0.95); border: 1px solid var(--border-subtle); border-radius: 18px 18px 4px 18px; align-self: flex-start; position: relative; user-select:none; transition:0.2s; }
@@ -126,22 +117,24 @@ header p { font-size: 0.95rem; opacity: 0.9; }
 .chat-compose input { flex: 1; padding: 12px 16px; border-radius: 14px; border: 1px solid var(--border-subtle); outline: none; background: rgba(255,255,255,0.9); font-size:1rem; }
 .chat-compose button { padding: 12px 20px; border-radius: 14px; border: none; background: var(--primary); color: #fff; font-weight: 800; cursor: pointer; box-shadow: 0 6px 15px var(--cyber-glow); }
 
-.fab-container { position: fixed; bottom: 20px; left: 20px; z-index: 1500; display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
+/* Draggable FAB */
+.fab-container { position: fixed; bottom: 20px; left: 20px; z-index: 1500; display:flex; flex-direction:column; align-items:center; gap:12px; cursor: grab; }
+.fab-container:active { cursor: grabbing; }
 .fab-menu { display: flex; flex-direction: column; gap: 10px; opacity: 0; pointer-events: none; transform: translateY(20px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 .fab-menu.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
-.fab-menu-btn { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: 1px solid var(--border-subtle); padding: 10px 16px; border-radius: 14px; font-weight: 700; color: var(--primary-dark); box-shadow: var(--glass-shadow); cursor: pointer; display:flex; align-items:center; gap:8px; }
-.fab-main { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--green)); color: #fff; border: none; font-size: 1.8rem; box-shadow: 0 10px 25px var(--cyber-glow); cursor: pointer; display: grid; place-items: center; transition: 0.3s; }
+.fab-menu-btn { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: 1px solid var(--border-subtle); padding: 10px 16px; border-radius: 14px; font-weight: 700; color: var(--primary-dark); box-shadow: var(--glass-shadow); cursor: pointer; display:flex; align-items:center; gap:8px; white-space:nowrap;}
+.fab-main { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--green)); color: #fff; border: none; font-size: 1.8rem; box-shadow: 0 10px 25px var(--cyber-glow); cursor: pointer; display: grid; place-items: center; transition: transform 0.3s, background 0.3s; }
 .fab-main.open { transform: rotate(45deg); background: #ef4444; box-shadow: 0 10px 25px rgba(239,68,68,0.3); }
 
-/* חמ"ל ניהול */
-#adminApp { padding-bottom:40px; }
+#adminApp { display:none; padding:20px; }
 .admin-layout { display: grid; gap: 20px; }
 @media(min-width: 768px) { .admin-layout { grid-template-columns: 280px 1fr; } }
 .admin-sidebar { background: var(--card); backdrop-filter: blur(20px); border-radius: 24px; padding: 24px; border: 1px solid var(--border-subtle); box-shadow: var(--glass-shadow); height: fit-content; }
 .admin-main { display: grid; gap: 20px; }
 .admin-title { font-size:1.5rem; font-weight:900; color:var(--primary-dark); margin-bottom:20px; }
+.admin-stat-box { background: linear-gradient(135deg, var(--primary), var(--green)); color: #fff; padding: 20px; border-radius: 16px; text-align: center; }
+.admin-stat-num { font-size: 2.5rem; font-weight: 900; }
 
-/* מודלים */
 .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 9999; }
 .modal-content { background: rgba(255,255,255,0.95); border-radius: 24px; max-width: 480px; width: 100%; padding: 30px; position: relative; box-shadow: 0 25px 50px rgba(0,0,0,0.15); border: 1px solid #fff; }
 .modal-close { position: absolute; top: 16px; left: 16px; width: 34px; height: 34px; border-radius: 50%; border: none; background: #f1f5f9; font-weight: 700; cursor: pointer; }
@@ -194,10 +187,6 @@ header p { font-size: 0.95rem; opacity: 0.9; }
       <button type="button" class="view-tab" data-view="category">🏷️ תחום</button>
     </div>
 
-    <div class="toolbar hidden" id="toolbar">
-      <input type="search" id="search" placeholder="חיפוש חופשי...">
-    </div>
-
     <div id="view-week" class="view-panel">
       <div class="weeks-grid" id="weeksGrid"></div>
       <div class="instructions">👆 בחר שבוע מהרשימה להצגת משימות.</div>
@@ -223,10 +212,10 @@ header p { font-size: 0.95rem; opacity: 0.9; }
   </div>
   
   <div id="section-ai" class="hidden">
-    <header><h1>🤖 העוזר החכם של הצוות</h1><p>שאל אותי על משימות, שבועות ותורנויות (Gemini AI)</p></header>
+    <header><h1>🤖 העוזר החכם של הצוות</h1><p>מבוסס מודל Google Gemini</p></header>
     <div class="chat-container">
       <div id="aiChatList" class="chat-list">
-        <div class="msg"><div class="meta"><span class="author">🤖 מנהל אישי</span></div><div class="body">שלום! אני העוזר החכם. שאל אותי שאלות כמו "מי מעביר הסב"ש השבוע?" או "באיזה שבוע אהרן עושה ערך מוסף?"</div></div>
+        <div class="msg"><div class="meta"><span class="author">🤖 עוזר חכם</span></div><div class="body">שלום! אני העוזר המלאכותי. תשאל אותי על שבועות, תורנויות וכו'. (שים לב להכניס את מפתח ה-API בקוד כדי שאעבוד).</div></div>
       </div>
       <div class="chat-compose">
         <input id="aiInput" type="text" placeholder="הקלד שאלה...">
@@ -235,11 +224,11 @@ header p { font-size: 0.95rem; opacity: 0.9; }
     </div>
   </div>
 
-  <div class="fab-container">
+  <div class="fab-container" id="draggableFab">
     <div class="fab-menu" id="fabMenu">
       <button class="fab-menu-btn" id="fabPingBtn">🔔 שלח פינג ענן</button>
-      <button class="fab-menu-btn" id="fabAdminBtn" style="display:none;color:#b45309">🛡️ חמ"ל ניהול</button>
-      <button class="fab-menu-btn" id="fabLogoutBtn" style="color:#ef4444">🚪 התנתק</button>
+      <button class="fab-menu-btn" id="fabAdminBtn" style="display:none;color:#b45309">🛡️ כניסה לחמ"ל ניהול</button>
+      <button class="fab-menu-btn" id="fabLogoutBtn" style="color:#ef4444">🚪 התנתק מהמערכת</button>
     </div>
     <button class="fab-main" id="fabMain">+</button>
   </div>
@@ -249,21 +238,32 @@ header p { font-size: 0.95rem; opacity: 0.9; }
 <main id="adminApp">
 <div class="container admin-layout">
   <div class="admin-sidebar">
-    <h2 class="admin-title">🛡️ חמ"ל מנהל</h2>
+    <h2 class="admin-title">🛡️ חמ"ל ניהול</h2>
     <div style="display:grid;gap:12px">
-      <button class="google-login-btn" id="adminBackBtn" style="margin:0;height:46px;font-size:0.95rem">🔙 חזור למערכת</button>
+      <button class="google-login-btn" id="adminBackBtn" style="margin:0;height:46px;font-size:0.95rem">🔙 חזור לאתר הרגיל</button>
       <hr style="border:0;border-top:1px solid var(--border-subtle);margin:10px 0">
-      <div style="font-size:0.9rem;font-weight:700;color:var(--muted)">הודעת מערכת (פוש)</div>
-      <input id="adminBroadcast" type="text" placeholder="הודעה לכולם..." style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--border-subtle)">
-      <button class="google-login-btn" id="adminBroadcastBtn" style="margin:0;height:46px;background:#ef4444;color:#fff;font-size:0.95rem">שדר התראה לכולם</button>
+      <div style="font-size:0.9rem;font-weight:700;color:var(--muted)">שידור מערכת (פוש)</div>
+      <input id="adminBroadcast" type="text" placeholder="הודעה לכל חברי הצוות..." style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--border-subtle)">
+      <button class="google-login-btn" id="adminBroadcastBtn" style="margin:0;height:46px;background:#ef4444;color:#fff;font-size:0.95rem">שדר התראה קריטית לכולם</button>
     </div>
   </div>
   <div class="admin-main">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+      <div class="admin-stat-box">
+        <div style="font-size:0.9rem;opacity:0.8">סה"כ מורשים במערכת</div>
+        <div class="admin-stat-num" id="statUsersCount">-</div>
+      </div>
+      <div class="admin-stat-box" style="background: linear-gradient(135deg, #0ea5e9, #2563eb);">
+        <div style="font-size:0.9rem;opacity:0.8">הודעות בצ'אט הפעיל</div>
+        <div class="admin-stat-num" id="statMsgsCount">-</div>
+      </div>
+    </div>
     <div class="cyber-card" style="margin:0">
-      <h2>🔒 ניהול מורשים (Whitelist)</h2>
+      <h2>🔒 ניהול מורשים מתקדם (Whitelist)</h2>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">רק כתובות אלו מורשות לעבור את מסך ההתחברות.</p>
       <div style="display:flex;gap:10px;margin-top:12px">
         <input id="adminNewEmail" type="email" placeholder="אימייל חדש..." style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border-subtle);outline:none">
-        <button id="adminAddEmailBtn" style="padding:0 20px;border-radius:12px;border:none;background:var(--green);color:#fff;font-weight:700;cursor:pointer">הוסף</button>
+        <button id="adminAddEmailBtn" style="padding:0 20px;border-radius:12px;border:none;background:var(--green);color:#fff;font-weight:700;cursor:pointer">הוסף מורשה</button>
       </div>
       <div id="adminEmailList" style="margin-top:16px;display:grid;gap:8px;font-size:0.9rem"></div>
     </div>
@@ -351,12 +351,10 @@ function calcCurrentWeek() {
 }
 const currentActiveWeek = calcCurrentWeek();
 
-// UI Helpers (Dynamic Island)
 const dynamicIsland = document.getElementById('dynamicIsland');
 const diText = document.getElementById('diText');
 const diDot = document.getElementById('diDot');
 let diTimeout;
-
 function showIsland(text, color = '#10b981', duration = 3000) {
   clearTimeout(diTimeout);
   diText.textContent = text;
@@ -378,19 +376,28 @@ document.getElementById('googleLoginBtn').addEventListener('click', async () => 
 auth.onAuthStateChanged(user => {
   if (user) {
     const email = (user.email||"").toLowerCase();
-    const isSuper = (email === SUPER_ADMIN_EMAIL || email === "0583211042@gmail.com");
-    if(isSuper || whitelistEmails.includes(email)) {
-      currentUser = user.displayName || email; currentEmail = email;
-      localStorage.setItem('loggedUser', currentUser); localStorage.setItem('loggedEmail', currentEmail);
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('mainApp').style.display = 'block';
-      isAdmin = isSuper;
-      document.getElementById('fabAdminBtn').style.display = isAdmin ? 'flex' : 'none';
-      attachDatabaseListeners(); 
-      renderUI(); 
-      showIsland("מחובר לענן בהצלחה");
-    } else { auth.signOut(); alert("אין לך הרשאה למערכת זו."); }
+    isAdmin = (email === SUPER_ADMIN_EMAIL || email === "0583211042@gmail.com");
+    
+    // בדיקת וייטליסט מול הענן אם קיים, אחרת מול המקומי
+    db.collection("groupData").doc("securityConfig").get().then(doc => {
+      let allowedList = whitelistEmails;
+      if (doc.exists && doc.data().whitelist) allowedList = doc.data().whitelist;
+      
+      if(isAdmin || allowedList.includes(email)) {
+        currentUser = user.displayName || email; currentEmail = email;
+        localStorage.setItem('loggedUser', currentUser); localStorage.setItem('loggedEmail', currentEmail);
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('fabAdminBtn').style.display = isAdmin ? 'flex' : 'none';
+        
+        // עכשיו בטוח להפעיל קריאות לענן
+        attachDatabaseListeners(); 
+        renderUI(); 
+        showIsland("מחובר לענן בהצלחה");
+      } else { auth.signOut(); alert("אין לך הרשאה למערכת זו."); }
+    });
   } else if (currentUser && currentEmail) {
+    // Session קיים
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
     isAdmin = (currentEmail === SUPER_ADMIN_EMAIL || currentEmail === "0583211042@gmail.com");
@@ -402,7 +409,10 @@ auth.onAuthStateChanged(user => {
 
 function attachDatabaseListeners() {
   db.collection("groupData").doc("securityConfig").onSnapshot(doc => {
-    if (doc.exists && doc.data().whitelist) { whitelistEmails = doc.data().whitelist; renderAdminEmails(); }
+    if (doc.exists && doc.data().whitelist) { 
+      whitelistEmails = doc.data().whitelist; 
+      if(isAdmin) renderAdminStats();
+    }
   });
   db.collection("groupData").doc("customTopics").onSnapshot(doc => { 
     cloudTopics = doc.data() || {}; renderUI(); 
@@ -410,13 +420,62 @@ function attachDatabaseListeners() {
   db.collection("groupData").doc("chatRoom").onSnapshot(doc => {
     chatMessages = (doc.exists && doc.data().messages) ? doc.data().messages : [];
     renderChat();
+    if(isAdmin) renderAdminStats();
   });
 }
 
-// Navigation & FAB
+const fabContainer = document.getElementById('draggableFab');
 const fabMain = document.getElementById('fabMain');
 const fabMenu = document.getElementById('fabMenu');
-fabMain.addEventListener('click', () => { fabMain.classList.toggle('open'); fabMenu.classList.toggle('open'); });
+
+let isDragging = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+// Load saved position
+const savedPos = localStorage.getItem('fabPosition');
+if(savedPos) {
+  const pos = JSON.parse(savedPos);
+  xOffset = pos.x; yOffset = pos.y;
+  setTranslate(xOffset, yOffset, fabContainer);
+}
+
+fabContainer.addEventListener("touchstart", dragStart, {passive: false});
+fabContainer.addEventListener("touchend", dragEnd, false);
+fabContainer.addEventListener("touchmove", drag, {passive: false});
+fabContainer.addEventListener("mousedown", dragStart, false);
+document.addEventListener("mouseup", dragEnd, false);
+document.addEventListener("mousemove", drag, false);
+
+function dragStart(e) {
+  if(e.target === fabMenu || fabMenu.contains(e.target)) return;
+  initialX = e.type.includes("touch") ? e.touches[0].clientX - xOffset : e.clientX - xOffset;
+  initialY = e.type.includes("touch") ? e.touches[0].clientY - yOffset : e.clientY - yOffset;
+  if (e.target === fabMain) isDragging = true;
+}
+function dragEnd(e) { 
+  if(isDragging) {
+    initialX = currentX; initialY = currentY; isDragging = false;
+    localStorage.setItem('fabPosition', JSON.stringify({x: xOffset, y: yOffset}));
+  }
+}
+function drag(e) {
+  if (isDragging) {
+    e.preventDefault();
+    currentX = e.type.includes("touch") ? e.touches[0].clientX - initialX : e.clientX - initialX;
+    currentY = e.type.includes("touch") ? e.touches[0].clientY - initialY : e.clientY - initialY;
+    xOffset = currentX; yOffset = currentY;
+    setTranslate(currentX, currentY, fabContainer);
+  }
+}
+function setTranslate(xPos, yPos, el) { el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`; }
+
+// Handle Click (Prevent click if dragged)
+fabMain.addEventListener('click', (e) => {
+  if (Math.abs(xOffset - (currentX||xOffset)) > 5 || Math.abs(yOffset - (currentY||yOffset)) > 5) {
+     // Was dragging, ignore click
+     currentX=xOffset; currentY=yOffset;
+     return;
+  }
+  fabMain.classList.toggle('open'); fabMenu.classList.toggle('open'); 
+});
 
 document.getElementById('fabLogoutBtn').addEventListener('click', () => {
   auth.signOut().then(() => { localStorage.clear(); location.reload(); });
@@ -442,7 +501,6 @@ document.querySelectorAll('.view-tab').forEach(btn => {
     document.querySelectorAll('.view-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
     ['week','person','category'].forEach(id => document.getElementById(`view-${id}`).classList.add('hidden'));
     document.getElementById(`view-${btn.dataset.view}`).classList.remove('hidden');
-    document.getElementById('toolbar').classList.toggle('hidden', btn.dataset.view === 'week');
   });
 });
 
@@ -456,7 +514,7 @@ function renderUI() {
   ALL_WEEKS.forEach(w => { const d = WEEK_DATA[w]; if(d.added&&PEOPLE[d.added]) byP[PEOPLE[d.added]].push({w,t:'ערך מוסף'}); if(d.sachi&&PEOPLE[d.sachi]) byP[PEOPLE[d.sachi]].push({w,t:'סח"י'}); if(d.hasb&&PEOPLE[d.hasb.trainee]) byP[PEOPLE[d.hasb.trainee]].push({w,t:'הסב"ש',top:cloudTopics[w]||d.hasb.topic}); });
   document.getElementById('personContent').innerHTML = Object.entries(byP).map(([n, tasks]) => `<div class="person-card"><h3>👤 ${n}</h3><ul>${tasks.length ? tasks.map(t=>`<li><div class="row-head"><span class="week-badge">שבוע ${t.w}</span><strong>${t.t}</strong></div>${t.top?`<div class="topic-line">${t.top}</div>`:''}</li>`).join('') : '<li class="empty-slot">אין משימות</li>'}</ul></div>`).join('');
   
-  // Personal Area - Smart Timer
+  // Personal Area
   const myTasks = [];
   ALL_WEEKS.forEach(w => { const d=WEEK_DATA[w]; if(d.added&&(PEOPLE[d.added]===currentUser||d.added.includes(currentUser))) myTasks.push({w,t:'ערך מוסף'}); if(d.sachi&&(PEOPLE[d.sachi]===currentUser||d.sachi.includes(currentUser))) myTasks.push({w,t:'סח"י'}); if(d.hasb&&(PEOPLE[d.hasb.trainee]===currentUser||d.hasb.trainee.includes(currentUser))) myTasks.push({w,t:'הסב"ש'}); });
   const nextTask = myTasks.find(t=>t.w >= currentActiveWeek) || myTasks[0];
@@ -525,12 +583,11 @@ function renderChat() {
 function attachChatGestures() {
   document.querySelectorAll('.msg').forEach(el => {
     let pressTimer;
-    // Long press to delete (if me)
+    // Long press to delete
     el.addEventListener('touchstart', e => { if(el.dataset.isme==='true'){ pressTimer = setTimeout(()=> deleteMsg(el.dataset.id), 800); } });
     el.addEventListener('touchend', () => clearTimeout(pressTimer));
     el.addEventListener('mousedown', e => { if(el.dataset.isme==='true'){ pressTimer = setTimeout(()=> deleteMsg(el.dataset.id), 800); } });
     el.addEventListener('mouseup', () => clearTimeout(pressTimer));
-    
     // Double click to like
     el.addEventListener('dblclick', async () => {
       const id = el.dataset.id;
@@ -540,7 +597,6 @@ function attachChatGestures() {
     });
   });
 }
-
 async function deleteMsg(id) {
   if(!confirm("למחוק הודעה זו?")) return;
   chatMessages = chatMessages.filter(m=>m.id!==id);
@@ -561,24 +617,30 @@ async function askAI() {
   inputEl.value = "";
   box.scrollTop = box.scrollHeight;
   
-  // Prepare context
-  const context = `אנחנו צוות 121. כרגע מחושב אוטומטית שבוע ${currentActiveWeek}. נתוני המשימות הם: ${JSON.stringify(WEEK_DATA)}. שים לב לשמות: ${JSON.stringify(PEOPLE)}.`;
+  const context = `אנחנו צוות 121. כרגע מחושב אוטומטית שבוע ${currentActiveWeek}. נתוני המשימות הם: ${JSON.stringify(WEEK_DATA)}.`;
   const systemPrompt = "אתה העוזר החכם של צוות 121. ענה לשאלות המשתמש בקצרה ובעברית בהתבסס רק על המידע שסופק.";
   
   const payload = {
     contents: [{ parts: [{ text: `המידע שלנו:\n${context}\n\nשאלה:\n${userQ}` }] }],
     systemInstruction: { parts: [{ text: systemPrompt }] }
   };
-  const apiKey = ""; 
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+  
+  // !!! שים לב !!! הכנס את מפתח ה-API שלך כאן למטה:
+  const apiKey = "YOUR_GEMINI_API_KEY_HERE"; 
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
   
   try {
+    if(apiKey === "YOUR_GEMINI_API_KEY_HERE") {
+        box.innerHTML += `<div class="msg"><div class="meta"><span class="author">🤖 שגיאה</span></div><div class="body">נא להכניס מפתח API של Gemini בקוד ה-HTML (שורה 734) כדי שאוכל לעבוד.</div></div>`;
+        box.scrollTop = box.scrollHeight;
+        return;
+    }
     const res = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     const data = await res.json();
     const ans = data.candidates?.[0]?.content?.parts?.[0]?.text || "מצטער, לא הבנתי.";
     box.innerHTML += `<div class="msg"><div class="meta"><span class="author">🤖 מנהל אישי</span></div><div class="body">${ans}</div></div>`;
   } catch(e) {
-    box.innerHTML += `<div class="msg"><div class="meta"><span class="author">🤖 שגיאה</span></div><div class="body">חיבור לעוזר נכשל.</div></div>`;
+    box.innerHTML += `<div class="msg"><div class="meta"><span class="author">🤖 שגיאה</span></div><div class="body">חיבור לעוזר נכשל. בדוק את מפתח ה-API.</div></div>`;
   }
   box.scrollTop = box.scrollHeight;
 }
@@ -586,24 +648,30 @@ async function askAI() {
 document.getElementById('fabAdminBtn').addEventListener('click', () => {
   document.getElementById('mainApp').style.display = 'none'; document.getElementById('adminApp').style.display = 'block';
   fabMain.classList.remove('open'); fabMenu.classList.remove('open');
+  renderAdminStats();
 });
 document.getElementById('adminBackBtn').addEventListener('click', () => {
   document.getElementById('adminApp').style.display = 'none'; document.getElementById('mainApp').style.display = 'block';
 });
 document.getElementById('adminBroadcastBtn').addEventListener('click', async () => {
   const text = document.getElementById('adminBroadcast').value.trim(); if(!text)return;
-  chatMessages.push({id:'msg_'+Date.now(), author:'🛡️ חמ"ל', text:`📢 הודעת מערכת: ${text}`, time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}), likes:0});
-  await db.collection("groupData").doc("chatRoom").set({messages:chatMessages}); document.getElementById('adminBroadcast').value=""; showIsland("שודר בהצלחה!");
+  chatMessages.push({id:'msg_'+Date.now(), author:'🛡️ חמ"ל מנהלים', text:`📢 הודעת מערכת קריטית: ${text}`, time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}), likes:0});
+  await db.collection("groupData").doc("chatRoom").set({messages:chatMessages}); document.getElementById('adminBroadcast').value=""; showIsland("שודר בהצלחה לכולם!");
 });
+
+function renderAdminStats() {
+    document.getElementById('statUsersCount').textContent = whitelistEmails.length;
+    document.getElementById('statMsgsCount').textContent = chatMessages.length;
+    document.getElementById('adminEmailList').innerHTML = whitelistEmails.map((e,i)=>`<div style="display:flex;justify-content:space-between;padding:10px;background:#f8fafc;border:1px solid var(--border-subtle);border-radius:12px"><span>${e}</span><button onclick="removeEmail(${i})" style="border:none;background:rgba(239,68,68,0.1);color:#ef4444;border-radius:8px;padding:4px 10px;font-weight:700;cursor:pointer">הסר מורשה</button></div>`).join('');
+}
+
 document.getElementById('adminAddEmailBtn').addEventListener('click', async () => {
   const email = document.getElementById('adminNewEmail').value.trim().toLowerCase(); if(!email)return;
-  if(!whitelistEmails.includes(email)){ whitelistEmails.push(email); await db.collection("groupData").doc("securityConfig").set({whitelist:whitelistEmails},{merge:true}); document.getElementById('adminNewEmail').value=""; showIsland("אימייל נוסף!"); }
+  if(!whitelistEmails.includes(email)){ whitelistEmails.push(email); await db.collection("groupData").doc("securityConfig").set({whitelist:whitelistEmails},{merge:true}); document.getElementById('adminNewEmail').value=""; showIsland("אימייל נוסף!"); renderAdminStats();}
 });
-function renderAdminEmails() {
-  document.getElementById('adminEmailList').innerHTML = whitelistEmails.map((e,i)=>`<div style="display:flex;justify-content:space-between;padding:8px;background:#f8fafc;border:1px solid var(--border-subtle);border-radius:8px"><span>${e}</span><button onclick="removeEmail(${i})" style="border:none;background:transparent;color:#ef4444;cursor:pointer">הסר</button></div>`).join('');
-}
 window.removeEmail = async function(i) {
-  whitelistEmails.splice(i,1); await db.collection("groupData").doc("securityConfig").set({whitelist:whitelistEmails},{merge:true}); showIsland("אימייל הוסר");
+  if(!confirm("להסיר משתמש זה? הוא לא יוכל להתחבר יותר.")) return;
+  whitelistEmails.splice(i,1); await db.collection("groupData").doc("securityConfig").set({whitelist:whitelistEmails},{merge:true}); showIsland("אימייל הוסר"); renderAdminStats();
 };
 
 });
