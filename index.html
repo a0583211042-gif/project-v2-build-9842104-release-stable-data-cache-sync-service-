@@ -2,309 +2,64 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#2563eb">
   <title>סינכרון צוות</title>
-
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
   <style>
-    :root{
-      --primary:#2563eb;--primary-dark:#1d4ed8;--soft:#eff6ff;
-      --success:#059669;--warning:#d97706;--danger:#dc2626;
-      --purple:#7c3aed;--bg:#f1f5f9;--surface:#fff;--surface2:#f8fafc;
-      --text:#0f172a;--muted:#64748b;--border:#e2e8f0;
-      --shadow:0 12px 32px rgba(15,23,42,.08);--radius:18px
-    }
-    [data-theme=dark]{
-      --bg:#0f172a;--surface:#1e293b;--surface2:#172033;
-      --text:#f8fafc;--muted:#94a3b8;--border:#334155;--soft:#172554
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{min-height:100vh;background:radial-gradient(circle at top right,#2563eb1f,transparent 35%),var(--bg);color:var(--text);font-family:system-ui,"Segoe UI",Arial,sans-serif;line-height:1.6}
-    button,input,select,textarea{font:inherit}
-    button{cursor:pointer}
-    .hidden{display:none!important}
-    .btn{border:0;border-radius:11px;padding:10px 15px;font-weight:700;transition:.2s}
-    .btn:hover{transform:translateY(-1px)}
-    .primary{background:var(--primary);color:#fff}.primary:hover{background:var(--primary-dark)}
-    .secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
-    .danger{background:var(--danger);color:#fff}.success{background:var(--success);color:#fff}
-    .icon-btn{width:42px;height:42px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text)}
-    .input,.select,.textarea{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);outline:0}
-    .input:focus,.select:focus,.textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px #2563eb1f}
-    .textarea{min-height:100px;resize:vertical}
-
-    /* Login */
-    #loginScreen{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#1d4ed8f2,#7c3aedeb)}
-    .login-card{width:min(430px,100%);padding:38px 28px;text-align:center;background:#fffffff5;color:#0f172a;border-radius:28px;box-shadow:0 30px 80px #0004}
-    .logo{width:72px;height:72px;margin:0 auto 18px;display:grid;place-items:center;border-radius:22px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:34px}
-    .login-card h1{font-size:2rem;margin-bottom:8px}.login-card p{color:#64748b;margin-bottom:25px}
-    .google-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#111;border:1px solid #d1d5db;border-radius:12px;padding:13px;font-weight:700}
-
-    /* Layout */
-    .app{min-height:100vh;display:flex}
-    .sidebar{position:fixed;inset:0 auto 0 0;width:260px;padding:20px;background:var(--surface);border-right:1px solid var(--border);z-index:20;display:flex;flex-direction:column;transition:.25s}
-    html[dir=rtl] .sidebar{inset:0 0 0 auto;border-right:0;border-left:1px solid var(--border)}
-    .brand{display:flex;align-items:center;gap:12px;padding:6px 8px 26px}
-    .brand-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:22px}
-    .brand small{display:block;color:var(--muted);font-size:.74rem}
-    .nav{display:grid;gap:6px}.nav button{width:100%;display:flex;gap:12px;padding:12px 14px;border:0;border-radius:12px;background:transparent;color:var(--muted);text-align:right}
-    .nav button:hover,.nav button.active{background:var(--soft);color:var(--primary);font-weight:700}
-    .side-bottom{margin-top:auto;display:grid;gap:8px}
-    .main{width:calc(100% - 260px);margin-left:260px;padding:24px}
-    html[dir=rtl] .main{margin-left:0;margin-right:260px}
-    .topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:24px}
-    .mobile-menu{display:none}.topbar h1{font-size:clamp(1.35rem,3vw,2rem)}.topbar p{color:var(--muted);font-size:.9rem}
-    .page{display:none}.page.active{display:block;animation:fade .2s}
-    @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-    .card{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-    .heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}.heading p{color:var(--muted)}
-    .welcome{padding:28px;margin-bottom:20px;color:#fff;border-radius:var(--radius);background:linear-gradient(135deg,#1d4ed8,#7c3aed)}
-    .welcome h2{font-size:clamp(1.4rem,4vw,2.2rem)}
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-    .stat{display:flex;align-items:center;gap:13px}.stat-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;background:var(--soft);font-size:21px}.stat strong{display:block;font-size:1.5rem}.stat span{color:var(--muted)}
-    .dashboard{display:grid;grid-template-columns:1.25fr .75fr;gap:20px}
-    .list{display:grid;gap:10px}.item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid var(--border);border-radius:13px;background:var(--surface2)}
-    .item strong{display:block}.item small{display:block;color:var(--muted);font-size:.78rem}
-    .filters{display:grid;grid-template-columns:1fr 180px 180px auto;gap:10px;margin-bottom:18px}
-    .badge{display:inline-flex;padding:4px 9px;border-radius:99px;font-size:.74rem;font-weight:700;white-space:nowrap}
-    .blue{background:#dbeafe;color:#1d4ed8}.green{background:#d1fae5;color:#047857}.orange{background:#fef3c7;color:#b45309}.purple{background:#ede9fe;color:#6d28d9}
-    .weeks{display:grid;gap:14px}.week{overflow:hidden;border:1px solid var(--border);border-radius:16px;background:var(--surface)}.week-head{display:flex;justify-content:space-between;padding:15px 18px;background:var(--surface2)}
-    .tasks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:16px}
-    .task{padding:15px;border:1px solid var(--border);border-radius:13px}.task h3{margin:8px 0 3px}.task p{color:var(--muted);font-size:.86rem}.task-actions{display:flex;gap:5px;margin-top:12px}.task-actions button{padding:7px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface2)}
-    .personal{display:grid;grid-template-columns:.8fr 1.2fr;gap:20px}.profile{text-align:center}.avatar{width:82px;height:82px;display:grid;place-items:center;margin:auto auto 12px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:2rem;font-weight:700}
-    .chat{min-height:560px;display:flex;flex-direction:column}.messages{flex:1;min-height:390px;max-height:600px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:8px 2px 18px}.message{max-width:75%;padding:12px 14px;border-radius:16px;border:1px solid var(--border);background:var(--surface2)}.message.mine{margin-left:auto;background:#dbeafe}.meta{display:flex;justify-content:space-between;gap:8px;font-size:.8rem;color:var(--muted)}.body{margin-top:6px;white-space:pre-wrap;word-break:break-word}
-    .chat-form{display:flex;gap:10px;margin-top:12px}
-    .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.group{display:grid;gap:6px}.group.full{grid-column:1/-1}.group label{font-weight:700}.empty{padding:32px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:14px}
-    .modal-bg{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;background:#0f172a99}.modal{width:min(580px,100%);max-height:90vh;overflow:auto;padding:22px;border-radius:22px;background:var(--surface);box-shadow:var(--shadow)}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-    #toast{position:fixed;right:24px;bottom:24px;z-index:200;padding:13px 18px;border-radius:12px;background:#0f172a;color:#fff;opacity:0;transform:translateY(20px);transition:.25s;pointer-events:none}#toast.show{opacity:1;transform:none}
-
-    @media(max-width:1100px){.stats{grid-template-columns:repeat(2,1fr)}.dashboard,.personal{grid-template-columns:1fr}}
-    @media(max-width:800px){
-      .sidebar{transform:translateX(110%)}.sidebar.open{transform:translateX(0)}
-      .main,html[dir=rtl] .main{width:100%;margin:0;padding:16px}.mobile-menu{display:grid}
-      .tasks{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}.filters .input{grid-column:1/-1}.admin-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.group.full{grid-column:auto}
-    }
-    @media(max-width:520px){.stats{gap:9px}.stat{padding:14px}.filters{grid-template-columns:1fr}.filters .input{grid-column:auto}.chat-form{flex-direction:column}.message{max-width:90%}.heading{align-items:flex-start;flex-direction:column}.sidebar{width:90vw}}
+    :root{font-family:system-ui,"Segoe UI",Arial,sans-serif;color:#0f172a;background:#f1f5f9}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh}button{font:inherit;cursor:pointer}
+    .hidden{display:none!important}.screen{min-height:100vh;display:grid;place-items:center;padding:20px}
+    #loginScreen{background:linear-gradient(135deg,#1d4ed8,#7c3aed)}.card{width:min(680px,100%);padding:28px;background:#fff;border-radius:22px;box-shadow:0 20px 60px #0003}
+    .login-card{text-align:center;width:min(430px,100%)}h1,h2{margin-top:0}.logo{width:72px;height:72px;margin:0 auto 16px;display:grid;place-items:center;border-radius:22px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:34px}
+    .google-btn{width:100%;padding:14px;border:1px solid #d1d5db;border-radius:12px;background:#fff;font-weight:700}.muted{color:#64748b}.error{margin-top:14px;color:#b91c1c;white-space:pre-wrap}
+    header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}.btn{border:0;border-radius:10px;padding:10px 15px;font-weight:700}.primary{background:#2563eb;color:#fff}.secondary{background:#e2e8f0;color:#0f172a}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}.stat{padding:18px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc}.stat strong{display:block;font-size:1.7rem}.list{display:grid;gap:10px;margin-top:14px}.item{padding:13px;border:1px solid #e2e8f0;border-radius:12px}.form{display:flex;gap:10px;margin-top:18px}.input{flex:1;padding:11px;border:1px solid #cbd5e1;border-radius:10px}.message{padding:10px 12px;background:#eff6ff;border-radius:10px}.message b{display:block;font-size:.85rem}
+    @media(max-width:560px){.form{flex-direction:column}header{align-items:flex-start;flex-direction:column}}
   </style>
 </head>
-
 <body>
-  <section id="loginScreen">
-    <div class="login-card">
+  <section id="loginScreen" class="screen">
+    <div class="card login-card">
       <div class="logo">✦</div>
       <h1>סינכרון צוות</h1>
-      <p>מערכת חכמה לניהול משימות ותקשורת</p>
-      <button id="googleLogin" class="google-btn">
-        <span>🔵</span>
-        התחברות באמצעות Google
-      </button>
-      <small style="display:block;color:#64748b;margin-top:16px">
-        הכניסה מאובטחת באמצעות חשבון Google
-      </small>
+      <p class="muted">מערכת חכמה לניהול משימות ותקשורת</p>
+      <button id="googleLogin" class="google-btn">🔵 התחברות באמצעות Google</button>
+      <p id="loginError" class="error"></p>
     </div>
   </section>
 
-  <div id="app" class="app hidden">
-    <aside id="sidebar" class="sidebar">
-      <div class="brand">
-        <div class="brand-icon">✦</div>
-        <div>
-          <strong>סינכרון צוות</strong>
-          <small>ניהול חכם ופשוט</small>
-        </div>
-      </div>
-
-      <nav class="nav">
-        <button class="active" data-page="dashboard">📊 לוח בקרה</button>
-        <button data-page="schedule">📅 לוח שבועות</button>
-        <button data-page="personal">👤 אזור אישי</button>
-        <button data-page="chat">💬 צ׳אט קבוצתי</button>
-        <button id="adminNav" class="hidden" data-page="admin">🛡️ ממשק ניהול</button>
-      </nav>
-
-      <div class="side-bottom">
-        <button id="themeBtn" class="nav">🌙 מצב כהה</button>
-        <button id="logoutBtn" class="nav">⎋ יציאה</button>
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <div style="display:flex;align-items:center;gap:12px">
-          <button id="mobileMenu" class="icon-btn mobile-menu">☰</button>
-          <div>
-            <h1 id="pageTitle">לוח בקרה</h1>
-            <p id="pageSubtitle">סקירה כללית של הפעילות</p>
-          </div>
-        </div>
-        <span id="userBadge" class="badge blue"></span>
+  <main id="app" class="screen hidden">
+    <div class="card">
+      <header>
+        <div><h1>שלום, <span id="userName">חבר צוות</span> 👋</h1><p id="userEmail" class="muted"></p></div>
+        <button id="logoutBtn" class="btn secondary">⎋ יציאה</button>
       </header>
-
-      <section id="page-dashboard" class="page active">
-        <div class="welcome">
-          <h2 id="welcome">שלום 👋</h2>
-          <p>כאן אפשר לראות את כל מה שקורה בצוות.</p>
-        </div>
-
-        <div class="stats">
-          <div class="card stat"><div class="stat-icon">📅</div><div><strong id="statWeeks">0</strong><span>שבועות</span></div></div>
-          <div class="card stat"><div class="stat-icon">✅</div><div><strong id="statTasks">0</strong><span>משימות</span></div></div>
-          <div class="card stat"><div class="stat-icon">👥</div><div><strong id="statUsers">0</strong><span>משתמשים</span></div></div>
-          <div class="card stat"><div class="stat-icon">💬</div><div><strong id="statMessages">0</strong><span>הודעות</span></div></div>
-        </div>
-
-        <div class="dashboard">
-          <div class="card">
-            <div class="heading"><div><h2>משימות קרובות</h2><p>המשימות הבאות בלוח</p></div></div>
-            <div id="upcoming" class="list"></div>
-          </div>
-          <div class="card">
-            <h2>הפעילות שלי</h2>
-            <div id="myActivity" class="list"></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="page-schedule" class="page">
-        <div class="heading">
-          <div><h1>לוח שבועות</h1><p>ניהול משימות, נושאים ואחראים</p></div>
-          <button id="newTask" class="btn primary hidden">＋ משימה חדשה</button>
-        </div>
-
-        <div class="filters">
-          <input id="search" class="input" placeholder="חיפוש משימה, אדם או קטגוריה">
-          <select id="category" class="select">
-            <option value="">כל הקטגוריות</option>
-            <option>ערך מוסף</option><option>סח״י</option><option>הסב״ש</option><option>אחר</option>
-          </select>
-          <select id="status" class="select">
-            <option value="">כל הסטטוסים</option>
-            <option value="planned">מתוכנן</option><option value="active">פעיל</option><option value="done">הושלם</option>
-          </select>
-          <button id="clearFilters" class="btn secondary">נקה</button>
-        </div>
-        <div id="weeks" class="weeks"></div>
-      </section>
-
-      <section id="page-personal" class="page">
-        <div class="heading"><div><h1>האזור האישי</h1><p>המשימות שלך</p></div></div>
-        <div class="personal">
-          <div class="card profile">
-            <div id="avatar" class="avatar">מ</div>
-            <h2 id="profileName"></h2>
-            <p id="profileEmail" style="color:var(--muted)"></p>
-            <hr style="border:0;border-top:1px solid var(--border);margin:20px 0">
-            <div id="profileStats"></div>
-          </div>
-          <div class="card"><h2>המשימות שלי</h2><div id="personalTasks" class="list"></div></div>
-        </div>
-      </section>
-
-      <section id="page-chat" class="page">
-        <div class="heading"><div><h1>צ׳אט קבוצתי</h1><p>תקשורת עם חברי הצוות</p></div></div>
-        <div class="card chat">
-          <div id="messages" class="messages"></div>
-          <form id="chatForm" class="chat-form">
-            <input id="chatInput" class="input" maxlength="500" placeholder="כתוב הודעה">
-            <button class="btn primary">שלח</button>
-          </form>
-        </div>
-      </section>
-
-      <section id="page-admin" class="page">
-        <div class="heading"><div><h1>ממשק ניהול</h1><p>ניהול מלא של המערכת</p></div></div>
-
-        <div class="admin-grid">
-          <div class="card">
-            <h2>ניהול משתמשים</h2>
-            <p style="color:var(--muted);margin-bottom:14px">
-              משתמש חדש צריך להתחבר פעם אחת באמצעות Google לפני שיופיע כאן.
-            </p>
-            <div id="usersList" class="list"></div>
-          </div>
-
-          <div class="card">
-            <h2>ניהול מערכת</h2>
-            <div style="display:grid;gap:10px">
-              <button id="exportData" class="btn secondary">📥 ייצוא נתונים</button>
-              <button id="broadcast" class="btn primary">📢 הודעה מערכתית</button>
-            </div>
-            <p style="color:var(--muted);font-size:.85rem;margin-top:18px">
-              הרשאות האבטחה האמיתיות מוגדרות ב־Firestore Rules, ולא רק במסך הזה.
-            </p>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <div id="modalBg" class="modal-bg hidden">
-    <div class="modal">
-      <div class="modal-head">
-        <h2 id="modalTitle">משימה חדשה</h2>
-        <button id="closeModal" class="icon-btn">✕</button>
+      <div class="grid">
+        <div class="stat"><span>משימות</span><strong id="taskCount">0</strong></div>
+        <div class="stat"><span>משתמשים</span><strong id="userCount">0</strong></div>
+        <div class="stat"><span>הודעות</span><strong id="messageCount">0</strong></div>
       </div>
-
-      <form id="taskForm" class="form-grid">
-        <input id="taskId" type="hidden">
-
-        <div class="group">
-          <label>מספר שבוע</label>
-          <input id="taskWeek" class="input" type="number" min="1" required>
-        </div>
-
-        <div class="group">
-          <label>קטגוריה</label>
-          <select id="taskCategory" class="select">
-            <option>ערך מוסף</option><option>סח״י</option><option>הסב״ש</option><option>אחר</option>
-          </select>
-        </div>
-
-        <div class="group">
-          <label>כותרת</label>
-          <input id="taskTitle" class="input" required>
-        </div>
-
-        <div class="group">
-          <label>אחראי</label>
-          <input id="taskAssignee" class="input" required>
-        </div>
-
-        <div class="group">
-          <label>סטטוס</label>
-          <select id="taskStatus" class="select">
-            <option value="planned">מתוכנן</option>
-            <option value="active">פעיל</option>
-            <option value="done">הושלם</option>
-          </select>
-        </div>
-
-        <div class="group">
-          <label>פרטים</label>
-          <input id="taskDescription" class="input">
-        </div>
-
-        <div class="group full" style="display:flex;justify-content:flex-end;gap:8px">
-          <button type="button" id="cancelModal" class="btn secondary">ביטול</button>
-          <button class="btn primary">שמירה</button>
-        </div>
-      </form>
+      <section style="margin-top:24px">
+        <h2>משימות</h2>
+        <div id="tasks" class="list"><p class="muted">טוען...</p></div>
+      </section>
+      <section style="margin-top:24px">
+        <h2>צ׳אט קבוצתי</h2>
+        <div id="messages" class="list"></div>
+        <form id="chatForm" class="form">
+          <input id="chatInput" class="input" maxlength="500" placeholder="כתוב הודעה" autocomplete="off">
+          <button class="btn primary">שלח</button>
+        </form>
+      </section>
     </div>
-  </div>
-
-  <div id="toast"></div>
+  </main>
 
   <script>
     "use strict";
 
-    /*
-      החלף את הערכים האלה בפרטי Firebase שלך.
-      אין להכניס לכאן מפתח Gemini או סודות אחרים.
-    */
     const firebaseConfig = {
       apiKey: "AIzaSyDIdndgqboytlTQoYJRstLTGMSuhsZCIks",
       authDomain: "team-sync-2026.firebaseapp.com",
@@ -315,522 +70,102 @@
       measurementId: "G-16PX9WZ74Y"
     };
 
-    /*
-      זה החשבון היחיד שמקבל ממשק ניהול.
-      ההגנה האמיתית תוגדר גם ב-Firestore Rules.
-    */
-    const ADMIN_EMAIL = "a0583211042@gmail.com";
-
     firebase.initializeApp(firebaseConfig);
-
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
-
+    const provider = new firebase.auth.GoogleAuthProvider();
     let currentUser = null;
-    let tasks = [];
-    let users = [];
-    let unsubscribeTasks = null;
-    let unsubscribeUsers = null;
-    let unsubscribeMessages = null;
+    let stopTasks = null;
+    let stopUsers = null;
+    let stopMessages = null;
 
-    const $ = selector => document.querySelector(selector);
-
-    function isAdmin() {
-      return currentUser &&
-        currentUser.email &&
-        currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-    }
-
-    function escapeHTML(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function toast(message) {
-      const el = $("#toast");
-      el.textContent = message;
-      el.classList.add("show");
-      clearTimeout(toast.timer);
-      toast.timer = setTimeout(() => el.classList.remove("show"), 3000);
-    }
-
-    function formatDate(value) {
-      if (!value) return "";
-      const date = value.toDate ? value.toDate() : new Date(value);
-      return new Intl.DateTimeFormat("he-IL", {
-        day: "2-digit",
-        month: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit"
-      }).format(date);
-    }
-
-    function initials(name) {
-      return String(name || "מ")
-        .split(" ")
-        .slice(0, 2)
-        .map(word => word[0])
-        .join("");
-    }
-
-    function categoryClass(category) {
-      if (category === "הסב״ש") return "purple";
-      if (category === "סח״י") return "green";
-      if (category === "ערך מוסף") return "blue";
-      return "orange";
-    }
-
-    function statusText(status) {
-      return { planned: "מתוכנן", active: "פעיל", done: "הושלם" }[status] || status;
-    }
+    const $ = id => document.getElementById(id);
+    const showError = message => { $("loginError").textContent = message; };
+    const escapeHTML = value => String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
 
     function showLogin() {
-      $("#loginScreen").classList.remove("hidden");
-      $("#app").classList.add("hidden");
+      $("loginScreen").classList.remove("hidden");
+      $("app").classList.add("hidden");
     }
 
-    function showApp() {
-      $("#loginScreen").classList.add("hidden");
-      $("#app").classList.remove("hidden");
-
-      $("#userBadge").textContent = currentUser.displayName || currentUser.email;
-      $("#welcome").textContent = `שלום ${currentUser.displayName || "חבר צוות"} 👋`;
-      $("#profileName").textContent = currentUser.displayName || "";
-      $("#profileEmail").textContent = currentUser.email || "";
-      $("#avatar").textContent = initials(currentUser.displayName);
-
-      $("#adminNav").classList.toggle("hidden", !isAdmin());
-      $("#newTask").classList.toggle("hidden", !isAdmin());
-
-      startListeners();
+    function showApp(user) {
+      $("loginScreen").classList.add("hidden");
+      $("app").classList.remove("hidden");
+      $("userName").textContent = user.displayName || user.email || "חבר צוות";
+      $("userEmail").textContent = user.email || "";
     }
 
-    async function saveUser() {
-      const ref = db.collection("users").doc(currentUser.uid);
+    async function saveUser(user) {
+      const ref = db.collection("users").doc(user.uid);
       const snapshot = await ref.get();
-
       if (!snapshot.exists) {
         await ref.set({
-          uid: currentUser.uid,
-          name: currentUser.displayName || "",
-          email: currentUser.email.toLowerCase(),
-          photoURL: currentUser.photoURL || "",
-          role: isAdmin() ? "admin" : "member",
-          active: isAdmin(),
+          uid: user.uid,
+          name: user.displayName || "",
+          email: (user.email || "").toLowerCase(),
+          photoURL: user.photoURL || "",
+          role: "member",
+          active: (user.email || "").toLowerCase() === "a0583211042@gmail.com",
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
       }
     }
 
-    function startListeners() {
-      if (unsubscribeTasks) unsubscribeTasks();
-      if (unsubscribeUsers) unsubscribeUsers();
-      if (unsubscribeMessages) unsubscribeMessages();
-
-      unsubscribeTasks = db.collection("tasks")
-        .orderBy("week")
-        .onSnapshot(snapshot => {
-          tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          renderAll();
-        }, handleFirestoreError);
-
-      unsubscribeUsers = db.collection("users")
-        .onSnapshot(snapshot => {
-          users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          renderAll();
-        }, handleFirestoreError);
-
-      unsubscribeMessages = db.collection("chatMessages")
-        .orderBy("createdAt", "asc")
-        .limitToLast(100)
-        .onSnapshot(snapshot => {
-          const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          renderMessages(messages);
-          $("#statMessages").textContent = messages.length;
-        }, handleFirestoreError);
+    function listenToData() {
+      stopTasks?.(); stopUsers?.(); stopMessages?.();
+      stopTasks = db.collection("tasks").orderBy("week").onSnapshot(snapshot => {
+        const tasks = snapshot.docs.map(doc => ({id:doc.id,...doc.data()}));
+        $("taskCount").textContent = tasks.length;
+        $("tasks").innerHTML = tasks.length ? tasks.map(task => `<div class="item"><b>${escapeHTML(task.title || "ללא כותרת")}</b><br><span class="muted">שבוע ${escapeHTML(task.week)} · ${escapeHTML(task.assignee || "")}</span></div>`).join("") : `<p class="muted">אין משימות.</p>`;
+      }, error => console.error("Tasks:", error));
+      stopUsers = db.collection("users").onSnapshot(snapshot => { $("userCount").textContent = snapshot.size; }, error => console.error("Users:", error));
+      stopMessages = db.collection("chatMessages").orderBy("createdAt","asc").limitToLast(100).onSnapshot(snapshot => {
+        const messages = snapshot.docs.map(doc => doc.data());
+        $("messageCount").textContent = messages.length;
+        $("messages").innerHTML = messages.length ? messages.map(message => `<div class="message"><b>${escapeHTML(message.userName || "משתמש")}</b>${escapeHTML(message.text)}</div>`).join("") : `<p class="muted">אין הודעות.</p>`;
+      }, error => console.error("Messages:", error));
     }
 
-    function handleFirestoreError(error) {
-      console.error(error);
-      toast("שגיאה בגישה לנתונים. בדוק את הגדרות Firebase Rules.");
-    }
+    // Redirect avoids popup/cookie problems on GitHub Pages.
+    $("googleLogin").addEventListener("click", async () => {
+      showError("");
+      try { await auth.signInWithRedirect(provider); }
+      catch (error) { console.error(error); showError(error.message || "ההתחברות נכשלה"); }
+    });
 
-    function renderAll() {
-      const weeks = new Set(tasks.map(task => task.week));
-      $("#statWeeks").textContent = weeks.size;
-      $("#statTasks").textContent = tasks.length;
-      $("#statUsers").textContent = users.length;
-
-      renderDashboard();
-      renderSchedule();
-      renderPersonal();
-      renderUsers();
-    }
-
-    function renderDashboard() {
-      const upcoming = tasks
-        .filter(task => task.status !== "done")
-        .sort((a, b) => Number(a.week) - Number(b.week))
-        .slice(0, 5);
-
-      $("#upcoming").innerHTML = upcoming.length
-        ? upcoming.map(task => `
-          <div class="item">
-            <div>
-              <strong>${escapeHTML(task.title)}</strong>
-              <small>שבוע ${task.week} · ${escapeHTML(task.assignee)}</small>
-            </div>
-            <span class="badge ${categoryClass(task.category)}">${escapeHTML(task.category)}</span>
-          </div>
-        `).join("")
-        : `<div class="empty">אין משימות קרובות.</div>`;
-
-      const mine = tasks
-        .filter(task => task.assignee === currentUser.displayName)
-        .slice(0, 5);
-
-      $("#myActivity").innerHTML = mine.length
-        ? mine.map(task => `
-          <div class="item">
-            <div>
-              <strong>${escapeHTML(task.title)}</strong>
-              <small>שבוע ${task.week}</small>
-            </div>
-            <span class="badge ${task.status === "done" ? "green" : "orange"}">${statusText(task.status)}</span>
-          </div>
-        `).join("")
-        : `<div class="empty">אין משימות המשויכות אליך.</div>`;
-    }
-
-    function renderSchedule() {
-      const query = ($("#search").value || "").trim().toLowerCase();
-      const category = $("#category").value;
-      const status = $("#status").value;
-
-      const filtered = tasks.filter(task => {
-        const text = [
-          task.title, task.assignee, task.category,
-          task.description, task.week
-        ].join(" ").toLowerCase();
-
-        return (!query || text.includes(query)) &&
-          (!category || task.category === category) &&
-          (!status || task.status === status);
-      });
-
-      const groups = {};
-      filtered.forEach(task => {
-        groups[task.week] ||= [];
-        groups[task.week].push(task);
-      });
-
-      const weekNumbers = Object.keys(groups).sort((a, b) => Number(a) - Number(b));
-
-      $("#weeks").innerHTML = weekNumbers.length
-        ? weekNumbers.map(week => `
-          <article class="week">
-            <div class="week-head">
-              <h3>שבוע ${week}</h3>
-              <span class="badge blue">${groups[week].length} משימות</span>
-            </div>
-            <div class="tasks">
-              ${groups[week].map(task => `
-                <div class="task">
-                  <span class="badge ${categoryClass(task.category)}">${escapeHTML(task.category)}</span>
-                  <h3>${escapeHTML(task.title)}</h3>
-                  <p>👤 ${escapeHTML(task.assignee)}</p>
-                  <p>${escapeHTML(task.description || "ללא פרטים נוספים")}</p>
-                  <p style="margin-top:7px"><b>${statusText(task.status)}</b></p>
-
-                  ${isAdmin() ? `
-                    <div class="task-actions">
-                      <button data-edit="${task.id}">עריכה</button>
-                      <button data-delete="${task.id}">מחיקה</button>
-                    </div>
-                  ` : ""}
-                </div>
-              `).join("")}
-            </div>
-          </article>
-        `).join("")
-        : `<div class="empty">לא נמצאו משימות.</div>`;
-    }
-
-    function renderPersonal() {
-      const myTasks = tasks.filter(task => task.assignee === currentUser.displayName);
-      const done = myTasks.filter(task => task.status === "done").length;
-
-      $("#profileStats").innerHTML = `
-        <div style="display:flex;justify-content:space-around">
-          <div><b style="font-size:1.5rem">${myTasks.length}</b><small style="display:block;color:var(--muted)">סה״כ</small></div>
-          <div><b style="font-size:1.5rem;color:var(--success)">${done}</b><small style="display:block;color:var(--muted)">הושלמו</small></div>
-          <div><b style="font-size:1.5rem;color:var(--warning)">${myTasks.length - done}</b><small style="display:block;color:var(--muted)">פתוחות</small></div>
-        </div>
-      `;
-
-      $("#personalTasks").innerHTML = myTasks.length
-        ? myTasks.map(task => `
-          <div class="item">
-            <div><strong>${escapeHTML(task.title)}</strong><small>שבוע ${task.week} · ${escapeHTML(task.category)}</small></div>
-            <span class="badge ${task.status === "done" ? "green" : "orange"}">${statusText(task.status)}</span>
-          </div>
-        `).join("")
-        : `<div class="empty">אין משימות המשויכות אליך.</div>`;
-    }
-
-    function renderMessages(messages) {
-      $("#messages").innerHTML = messages.length
-        ? messages.map(message => {
-          const mine = message.userId === currentUser.uid;
-          return `
-            <div class="message ${mine ? "mine" : ""}">
-              <div class="meta">
-                <b>${escapeHTML(message.userName)}</b>
-                <span>${formatDate(message.createdAt)}</span>
-              </div>
-              <div class="body">${escapeHTML(message.text)}</div>
-            </div>
-          `;
-        }).join("")
-        : `<div class="empty">אין הודעות.</div>`;
-
-      $("#messages").scrollTop = $("#messages").scrollHeight;
-    }
-
-    function renderUsers() {
-      if (!isAdmin()) return;
-
-      $("#usersList").innerHTML = users.length
-        ? users.map(user => `
-          <div class="item">
-            <div>
-              <strong>${escapeHTML(user.name || user.email)}</strong>
-              <small>${escapeHTML(user.email)}</small>
-            </div>
-            <span class="badge ${user.active ? "green" : "orange"}">
-              ${user.active ? "פעיל" : "ממתין לאישור"}
-            </span>
-            ${user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase() ? `
-              <button class="btn secondary" data-toggle-user="${user.id}">
-                ${user.active ? "השבת" : "אשר"}
-              </button>
-            ` : `<span class="badge purple">מנהל</span>`}
-          </div>
-        `).join("")
-        : `<div class="empty">אין משתמשים.</div>`;
-    }
-
-    function navigate(page) {
-      if (page === "admin" && !isAdmin()) {
-        toast("אין לך הרשאה לאזור הניהול");
-        return;
-      }
-
-      document.querySelectorAll(".page").forEach(section => {
-        section.classList.toggle("active", section.id === `page-${page}`);
-      });
-
-      document.querySelectorAll(".nav button[data-page]").forEach(button => {
-        button.classList.toggle("active", button.dataset.page === page);
-      });
-
-      const names = {
-        dashboard: ["לוח בקרה", "סקירה כללית של הפעילות"],
-        schedule: ["לוח שבועות", "ניהול משימות ונושאים"],
-        personal: ["האזור האישי", "המשימות שלך"],
-        chat: ["צ׳אט קבוצתי", "תקשורת עם חברי הצוות"],
-        admin: ["ממשק ניהול", "ניהול מלא של המערכת"]
-      };
-
-      $("#pageTitle").textContent = names[page][0];
-      $("#pageSubtitle").textContent = names[page][1];
-      $("#sidebar").classList.remove("open");
-    }
-
-    function openTaskModal(task = null) {
-      $("#modalBg").classList.remove("hidden");
-      $("#modalTitle").textContent = task ? "עריכת משימה" : "משימה חדשה";
-
-      $("#taskId").value = task?.id || "";
-      $("#taskWeek").value = task?.week || "";
-      $("#taskCategory").value = task?.category || "ערך מוסף";
-      $("#taskTitle").value = task?.title || "";
-      $("#taskAssignee").value = task?.assignee || "";
-      $("#taskStatus").value = task?.status || "planned";
-      $("#taskDescription").value = task?.description || "";
-    }
-
-    function closeTaskModal() {
-      $("#modalBg").classList.add("hidden");
-      $("#taskForm").reset();
-    }
-
-    // התחברות Google
-    $("#googleLogin").addEventListener("click", async () => {
-      try {
-        await auth.signInWithPopup(googleProvider);
-      } catch (error) {
-        console.error(error);
-        toast("ההתחברות נכשלה");
-      }
+    auth.getRedirectResult().catch(error => {
+      console.error("Google redirect error:", error);
+      if (error.code === "auth/unauthorized-domain") showError("הדומיין לא מאושר ב-Firebase: a0583211042-gif.github.io");
+      else showError(error.message || "ההתחברות נכשלה");
     });
 
     auth.onAuthStateChanged(async user => {
-      if (!user) {
-        showLogin();
-        return;
-      }
-
       currentUser = user;
-
+      if (!user) { showLogin(); return; }
       try {
-        await saveUser();
-
-        const userDoc = await db.collection("users").doc(user.uid).get();
-        const profile = userDoc.data();
-
-        if (!isAdmin() && (!profile || profile.active !== true)) {
+        await saveUser(user);
+        const profile = (await db.collection("users").doc(user.uid).get()).data();
+        const isAdmin = (user.email || "").toLowerCase() === "a0583211042@gmail.com";
+        if (!isAdmin && (!profile || profile.active !== true)) {
           await auth.signOut();
-          alert("החשבון שלך ממתין לאישור מנהל.");
+          showError("החשבון שלך ממתין לאישור מנהל.");
           return;
         }
-
-        showApp();
+        showApp(user);
+        listenToData();
       } catch (error) {
         console.error(error);
-        toast("לא ניתן לטעון את פרופיל המשתמש");
+        showError("לא ניתן לטעון את פרופיל המשתמש. בדוק את Firestore Rules.");
       }
     });
 
-    // ניווט
-    document.querySelectorAll(".nav button[data-page]").forEach(button => {
-      button.addEventListener("click", () => navigate(button.dataset.page));
-    });
-
-    $("#mobileMenu").addEventListener("click", () => {
-      $("#sidebar").classList.toggle("open");
-    });
-
-    $("#logoutBtn").addEventListener("click", () => auth.signOut());
-
-    // מצב כהה
-    $("#themeBtn").addEventListener("click", () => {
-      const dark = document.documentElement.dataset.theme === "dark";
-      document.documentElement.dataset.theme = dark ? "light" : "dark";
-      localStorage.setItem("team-theme", dark ? "light" : "dark");
-      $("#themeBtn").textContent = dark ? "🌙 מצב כהה" : "☀️ מצב בהיר";
-    });
-
-    if (localStorage.getItem("team-theme") === "dark") {
-      document.documentElement.dataset.theme = "dark";
-      $("#themeBtn").textContent = "☀️ מצב בהיר";
-    }
-
-    // סינון
-    ["search", "category", "status"].forEach(id => {
-      $("#" + id).addEventListener("input", renderSchedule);
-    });
-
-    $("#clearFilters").addEventListener("click", () => {
-      $("#search").value = "";
-      $("#category").value = "";
-      $("#status").value = "";
-      renderSchedule();
-    });
-
-    // משימות
-    $("#newTask").addEventListener("click", () => {
-      if (isAdmin()) openTaskModal();
-    });
-
-    $("#closeModal").addEventListener("click", closeTaskModal);
-    $("#cancelModal").addEventListener("click", closeTaskModal);
-
-    $("#taskForm").addEventListener("submit", async event => {
+    $("logoutBtn").addEventListener("click", () => auth.signOut());
+    $("chatForm").addEventListener("submit", async event => {
       event.preventDefault();
-
-      if (!isAdmin()) return;
-
-      const id = $("#taskId").value;
-      const task = {
-        week: Number($("#taskWeek").value),
-        category: $("#taskCategory").value,
-        title: $("#taskTitle").value.trim(),
-        assignee: $("#taskAssignee").value.trim(),
-        status: $("#taskStatus").value,
-        description: $("#taskDescription").value.trim(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
-      try {
-        if (id) {
-          await db.collection("tasks").doc(id).update(task);
-          toast("המשימה עודכנה");
-        } else {
-          task.createdBy = currentUser.uid;
-          task.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-          await db.collection("tasks").add(task);
-          toast("המשימה נוספה");
-        }
-
-        closeTaskModal();
-      } catch (error) {
-        console.error(error);
-        toast("שמירת המשימה נכשלה");
-      }
-    });
-
-    document.addEventListener("click", async event => {
-      const edit = event.target.closest("[data-edit]");
-      const remove = event.target.closest("[data-delete]");
-      const toggle = event.target.closest("[data-toggle-user]");
-
-      if (edit) {
-        const task = tasks.find(item => item.id === edit.dataset.edit);
-        if (task) openTaskModal(task);
-      }
-
-      if (remove && isAdmin()) {
-        if (!confirm("למחוק את המשימה?")) return;
-
-        try {
-          await db.collection("tasks").doc(remove.dataset.delete).delete();
-          toast("המשימה נמחקה");
-        } catch {
-          toast("מחיקת המשימה נכשלה");
-        }
-      }
-
-      if (toggle && isAdmin()) {
-        const user = users.find(item => item.id === toggle.dataset.toggleUser);
-        if (!user) return;
-
-        try {
-          await db.collection("users").doc(user.id).update({
-            active: !user.active,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          toast(user.active ? "המשתמש הושבת" : "המשתמש אושר");
-        } catch {
-          toast("עדכון המשתמש נכשל");
-        }
-      }
-    });
-
-    // צ׳אט
-    $("#chatForm").addEventListener("submit", async event => {
-      event.preventDefault();
-
-      const input = $("#chatInput");
+      const input = $("chatInput");
       const text = input.value.trim();
-      if (!text) return;
-
+      if (!text || !currentUser) return;
       try {
         await db.collection("chatMessages").add({
           userId: currentUser.uid,
@@ -838,48 +173,8 @@
           text,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-
         input.value = "";
-      } catch {
-        toast("שליחת ההודעה נכשלה");
-      }
-    });
-
-    // ייצוא נתונים למנהל
-    $("#exportData").addEventListener("click", () => {
-      if (!isAdmin()) return;
-
-      const content = JSON.stringify({ tasks, users }, null, 2);
-      const blob = new Blob([content], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.download = "team-sync-backup.json";
-      link.click();
-
-      URL.revokeObjectURL(url);
-      toast("הנתונים יוצאו");
-    });
-
-    $("#broadcast").addEventListener("click", async () => {
-      if (!isAdmin()) return;
-
-      const text = prompt("כתוב הודעה מערכתית:");
-      if (!text?.trim()) return;
-
-      try {
-        await db.collection("chatMessages").add({
-          userId: currentUser.uid,
-          userName: "מערכת",
-          text: text.trim(),
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        toast("ההודעה נשלחה");
-      } catch {
-        toast("שליחת ההודעה נכשלה");
-      }
+      } catch (error) { console.error(error); alert("שליחת ההודעה נכשלה"); }
     });
   </script>
 </body>
