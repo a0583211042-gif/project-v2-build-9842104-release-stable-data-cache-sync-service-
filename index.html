@@ -60,7 +60,7 @@ body::before {
 .google-login-btn{ width:100%; border:1px solid var(--border-subtle); border-radius:16px; height:54px; background:#fff; color:#0f172a; font-weight:800; font-size:1rem; display:flex; align-items:center; justify-content:center; gap:12px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,0.04); transition:0.25s; }
 .google-login-btn:hover{ background:var(--primary-light); transform:translateY(-2px); box-shadow:0 12px 25px var(--cyber-glow); }
 
-#mainApp { display: none; width: 100%; }
+#mainApp { width: 100%; }
 .hidden { display: none !important; }
 
 /* סרגל ניווט מקובע */
@@ -174,7 +174,7 @@ body::before {
   </div>
 </section>
 
-<main id="mainApp">
+<main id="mainApp" class="hidden">
 <div class="container">
   
   <nav class="nav-bar">
@@ -183,7 +183,7 @@ body::before {
       <button class="nav-btn" data-nav="personal">👤 אישי</button>
       <button class="nav-btn" data-nav="chat">💬 קבוצה</button>
       <button class="nav-btn" data-nav="ai" style="color: #2563eb; background: #dbeafe;">🤖 עוזר AI</button>
-      <button class="nav-btn hidden" id="adminNavBtn" data-nav="admin" style="color: #ef4444;">🛡️ חמ"ל ניהול</button>
+      <button class="nav-btn hidden" id="adminNavBtn" data-nav="admin" style="color: #ef4444;">🛡️ חמ"ל</button>
     </div>
     <div class="top-actions">
       <div class="cloud-indicator"><div class="green-dot"></div></div>
@@ -320,11 +320,7 @@ const INITIAL_EMAILS = [
 const firebaseConfig = {
   apiKey: "AIzaSyB_AerhoBm-VJPqf25kOH1S4xGdauV2EDI",
   authDomain: "group-hub-2026.firebaseapp.com",
-  projectId: "group-hub-2026",
-  storageBucket: "group-hub-2026.firebasestorage.app",
-  messagingSenderId: "816870308307",
-  appId: "1:816870308307:web:c3252cbb51f4f075d49726",
-  measurementId: "G-KMJ1H172PN"
+  projectId: "group-hub-2026"
 };
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -392,11 +388,12 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// כפתור פלוס נגרר (Draggable FAB)
+// כפתור פלוס נגרר בצורה מאובטחת
 const fab = document.getElementById('smartFab');
 let isDragging = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
 
-const savedPos = JSON.parse(localStorage.getItem('fabPos'));
+let savedPos = null;
+try { savedPos = JSON.parse(localStorage.getItem('fabPos')); } catch(e) {}
 if(savedPos) {
   xOffset = savedPos.x; yOffset = savedPos.y;
   setTranslate(xOffset, yOffset, fab);
@@ -430,7 +427,7 @@ function drag(e) {
 function setTranslate(xPos, yPos, el) { el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`; }
 fab.addEventListener('click', () => { if(Math.abs(xOffset - initialX) < 5) showToast("תפריט פעולות מהירות יעלה כאן בקרוב!"); });
 
-// אימות וניהול משתמשים (Auth)
+// אימות משתמשים (Auth) ותיקון הלימבו
 document.getElementById('googleLoginBtn').addEventListener('click', async () => {
   try { await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); } catch (e) {
     try { await auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()); } catch (err) {}
@@ -452,7 +449,7 @@ function initDataListeners() {
   });
   db.collection("groupData").doc("customTopics").onSnapshot(doc => {
     cloudTopics = doc.data() || {};
-    if(document.getElementById('mainApp').classList.contains('hidden') === false) {
+    if(!document.getElementById('mainApp').classList.contains('hidden')) {
       renderWeeksGrid(); renderPersonView(); renderCategoryView(); renderPersonalArea();
     }
   });
@@ -470,7 +467,7 @@ function validateAccess() {
     auth.signOut(); alert("אין לך הרשאת גישה למערכת זו."); return;
   }
   
-  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('mainApp').classList.remove('hidden');
   
   if (isSuper) {
@@ -695,7 +692,7 @@ function renderChat() {
   if(isAtBottom) box.scrollTop = box.scrollHeight;
 }
 
-// AI (Gemini) עם תפיסת שגיאות מגוגל
+// AI (Gemini) - מחובר למפתח שהבאת
 document.getElementById('aiChatSend').addEventListener('click', sendAIPrompt);
 document.getElementById('aiChatInput').addEventListener('keydown', (e) => { if(e.key==='Enter') sendAIPrompt(); });
 
@@ -707,7 +704,6 @@ async function sendAIPrompt() {
   box.innerHTML += `<div class="msg me"><div class="meta"><b>אני</b></div><div class="body">${prompt}</div></div>`;
   input.value = ''; box.scrollTop = box.scrollHeight;
 
-  // המפתח האישי שהבאת הוטמע כאן בדיוק
   const API_KEY = 'AQ.Ab8RN6KPu1E6H2N76o032Oe_DsvdDp961sqZ1mXr_fu3B1XjDA'; 
 
   try {
